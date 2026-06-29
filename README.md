@@ -1,0 +1,2 @@
+# external-brain-workspace
+XやEvernoteにアクセスすることができ、外部サービスに保存された自分の思考から新たなアイデアを生み出す
