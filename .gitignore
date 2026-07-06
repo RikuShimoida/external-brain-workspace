@@ -1,0 +1,12 @@
+# 環境変数（秘密情報）
+.env
+.env.local
+
+# Claude Code のローカル設定
+.claude/settings.local.json
+
+# Twitter/X のデータアーカイブ（個人データ）
+twitter-archive/
+
+# Podcast ネタ発掘の中間生成物（前処理済み候補など）
+podcast-ideas/.cache/
