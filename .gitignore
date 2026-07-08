@@ -8,5 +8,8 @@
 # Twitter/X のデータアーカイブ（個人データ）
 twitter-archive/
 
-# Podcast ネタ発掘の中間生成物（前処理済み候補など）
-podcast-ideas/.cache/
+# Podcast ネタ発掘の成果物・中間生成物（過去投稿からの個人的な引用を含む）
+podcast-ideas/
+
+# 意思決定アドバイザー（/decide）の判断ログ（個人的判断を含む）
+decisions/

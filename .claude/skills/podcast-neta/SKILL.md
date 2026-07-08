@@ -98,6 +98,6 @@ python3 .claude/skills/podcast-neta/scripts/extract_tweets.py \
 全件は貼らない（ファイルに任せる）。次にどれを深掘りするかユーザーに委ねる。
 
 ## 補足
-- `.cache/` は中間生成物。`podcast-ideas/.gitignore` で無視してよい。
+- `podcast-ideas/` は個人的な引用を含む成果物なので、リポジトリの `.gitignore` で丸ごと除外している（手元には残るが Git 管理外）。`.cache/` はその中の中間生成物。
 - 同じ日に複数回走らせる場合は上書き確認をする。
 - ネタは捏造しない。すべて実在する投稿/ノートの引用に紐づける。
