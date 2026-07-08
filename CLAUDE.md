@@ -36,6 +36,9 @@ MCP の `search_tweets` は直近しか取れないため。
   - X アーカイブと Evernote から Podcast ネタを発掘し、`podcast-ideas/YYYY-MM-DD.md` に提案を書き出す。
   - 前処理スクリプト: `scripts/extract_tweets.py`（構造ノイズを機械的に除去）
   - 選別基準: `references/selection-criteria.md`
+- スキル `tweet-draft`（`.claude/skills/tweet-draft/`）
+  - X アーカイブと Evernote から、価値観・人格が伝わる「有益なツイート」の下書きを生成し、`tweet-drafts/YYYY-MM-DD.md` に書き出す。**承認制**（下書き提案 → オーナーが承認 → 投稿）で、`post_tweet` を呼ぶのは承認後だけ。完全自動投稿はしない。
+  - ネタ発掘は `podcast-neta` の資産（`extract_tweets.py` / `podcast-idea-miner` / `selection-criteria.md`）を流用。整形の物差しは `references/tweet-criteria.md`。
 - サブエージェント `podcast-idea-miner`（`.claude/agents/podcast-idea-miner.md`）
   - 候補ツイートの指定範囲、または Evernote を走査し、ポエム/哲学系の言葉だけを構造化 JSON で返す発掘専用。
 
