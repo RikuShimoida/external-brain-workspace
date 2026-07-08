@@ -1,3 +1,6 @@
+# macOS のゴミファイル
+.DS_Store
+
 # 環境変数（秘密情報）
 .env
 .env.local
@@ -10,6 +13,9 @@ twitter-archive/
 
 # Podcast ネタ発掘の成果物・中間生成物（過去投稿からの個人的な引用を含む）
 podcast-ideas/
+
+# ツイート下書きの成果物・中間生成物（過去投稿からの個人的な引用を含む）
+tweet-drafts/
 
 # 意思決定アドバイザー（/decide）の判断ログ（個人的判断を含む）
 decisions/
