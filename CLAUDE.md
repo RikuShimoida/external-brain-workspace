@@ -30,6 +30,13 @@ MCP の `search_tweets` は直近しか取れないため。
 - ネタや引用を**捏造しない**。提案は必ず実在する投稿/ノートの引用に紐づける。
 - 大量データの走査は本体コンテキストを汚さないよう**サブエージェントに隔離**する。
 
+## 開発ルール
+
+BeerSalon から横展開した開発ルール。作業時は必ず従うこと。
+
+- **作業はブランチを切ってから。** `main` に直接コミットせず、`feature/<issue番号>-<スラッグ>` でブランチを作り、PR 経由でマージする。詳細は [.claude/rules/git-workflow.md](.claude/rules/git-workflow.md)。
+- **Bash の `description` は日本語で書く。** コマンドの確認を求めるときは目的・影響・リスクを明示する。詳細は [.claude/rules/command-rules.md](.claude/rules/command-rules.md)。
+
 ## スキルとエージェント
 
 - スキル `podcast-neta`（`.claude/skills/podcast-neta/`）
