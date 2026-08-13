@@ -49,6 +49,11 @@ BeerSalon から横展開した開発ルール。作業時は必ず従うこと�
 - スキル `note-draft`（`.claude/skills/note-draft/`）
   - X アーカイブと Evernote から、note.com にそのまま貼れる「Podcast の下敷きを兼ねた記事」の下書きを生成し、`note-drafts/YYYY-MM-DD.md` に書き出す。**note を書くこと自体が Podcast のひとり語りの骨組みになる**形を狙う（逐語台本は作らない／記事で全部言い切らず深掘りは Podcast に残す）。note には投稿 API が無い前提で、成果物は「貼るだけ」のファイルまで用意する（自動投稿はしない）。
   - ネタ発掘は `podcast-neta` の資産を流用。整形の物差しは `references/note-criteria.md`。
+- スキル `books`（`.claude/skills/books/`）
+  - オーナーが過去に読んできた本（Evernote「読みたい本/読んできた本」の全56冊）を「判断軸のライブラリ」として持つ読書外部脳。人生・仕事・お金・人間関係・健康・時間などの相談時に発火。
+  - 司令塔 `SKILL.md` + タグ索引 `index.md` + 1冊1ファイル `volumes/`（全56冊）。相談時は索引でタグを**意味的に**照合し、関連**上位3〜5冊だけ**をロードする（全冊は読まない）。
+  - 各冊は概要／主張／原則に加え「**限界・反論**」欄を持ち、本を権威化せず、本人の経験・現状と**統合**して回答する。中身は一般公開の書評・要約を裏取りし出典URL付き。
+  - 本を1冊足すときは `volumes/` に1ファイル作り、`index.md` に1行足す（1ファイル1冊）。
 - サブエージェント `podcast-idea-miner`（`.claude/agents/podcast-idea-miner.md`）
   - 候補ツイートの指定範囲、または Evernote を走査し、ポエム/哲学系の言葉だけを構造化 JSON で返す発掘専用。
 
