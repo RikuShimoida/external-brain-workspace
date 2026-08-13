@@ -22,3 +22,5 @@ note-drafts/
 
 # 意思決定アドバイザー（/decide）の判断ログ（個人的判断を含む）
 decisions/
+
+.vscode/
