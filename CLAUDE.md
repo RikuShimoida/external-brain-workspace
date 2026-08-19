@@ -19,6 +19,8 @@ Podcast のネタとして再利用することに価値を置いている。
 | Evernote | ノート群 | Evernote MCP（`semantic_search` / `search_notes` / `get_note` など） |
 | X 投稿/検索 | — | Twitter MCP（`post_tweet` / `search_tweets`。**過去全件は取れない**） |
 | ChatGPT 過去会話 | `chatgpt-archive/`（全会話の索引 `conversation_map.tsv` 約4,540件 ＋ 人生相談だけ抜き出した `lifetalk/` 60件） | ローカルファイルを直接パース |
+| Google カレンダー（行動ログ） | `calendar-archive/events.tsv`（ICS エクスポートから生成） | ローカルファイルを直接パース |
+| カレンダー直近の予定 | — | Google Calendar MCP（`list_events` / `search_events`。**全期間の網羅には使わない**） |
 
 **重要:** 過去ツイートの網羅的な分析は Twitter MCP ではなくローカルアーカイブを使う。
 MCP の `search_tweets` は直近しか取れないため。
@@ -27,7 +29,14 @@ ChatGPT アーカイブは ZIP を全展開せず、まず `scripts/chatgpt_map.
 （日付・タイトル・メッセージ数だけの一覧）を作り、`scripts/chatgpt_extract.py` で
 人生相談系の会話だけ本文を Markdown 化する。価値観・悩み・家族の話が濃いソース。
 
-`twitter-archive/` と `chatgpt-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
+Google カレンダーは他のソースと性質が違う。X・Evernote・ChatGPT が「自分が**言ったこと**」の
+記録なのに対し、カレンダーだけが「実際に**何に時間を使ったか**」の記録になる。
+言葉と行動のズレは、それ自体が Podcast のネタになり `/decide` の判断材料にもなる。
+Google カレンダー → 設定 → インポート/エクスポート → エクスポート で落とした ZIP を
+`calendar-archive/` に置き、`scripts/calendar_map.py` で `events.tsv` に変換して使う。
+既定では個人アカウントのカレンダーだけを対象にする（`--all` で全部、`--calendar <文字列>` で絞り込み）。
+
+`twitter-archive/` `chatgpt-archive/` `calendar-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
 
 ## 進め方の原則
 

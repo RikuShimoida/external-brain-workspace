@@ -14,6 +14,9 @@ twitter-archive/
 # ChatGPT のデータアーカイブ（人生相談などの個人データ）
 chatgpt-archive/
 
+# Google カレンダーのエクスポートと行動ログ（個人データ）
+calendar-archive/
+
 # Podcast ネタ発掘の成果物・中間生成物（過去投稿からの個人的な引用を含む）
 podcast-ideas/
 
