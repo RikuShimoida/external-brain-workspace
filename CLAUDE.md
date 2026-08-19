@@ -18,11 +18,16 @@ Podcast のネタとして再利用することに価値を置いている。
 | X 過去ツイート | `twitter-archive/extracted/data/tweets.js`（約3,267件） | ローカルファイルを直接パース |
 | Evernote | ノート群 | Evernote MCP（`semantic_search` / `search_notes` / `get_note` など） |
 | X 投稿/検索 | — | Twitter MCP（`post_tweet` / `search_tweets`。**過去全件は取れない**） |
+| ChatGPT 過去会話 | `chatgpt-archive/`（全会話の索引 `conversation_map.tsv` 約4,540件 ＋ 人生相談だけ抜き出した `lifetalk/` 60件） | ローカルファイルを直接パース |
 
 **重要:** 過去ツイートの網羅的な分析は Twitter MCP ではなくローカルアーカイブを使う。
 MCP の `search_tweets` は直近しか取れないため。
 
-`twitter-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
+ChatGPT アーカイブは ZIP を全展開せず、まず `scripts/chatgpt_map.py` で「地図」
+（日付・タイトル・メッセージ数だけの一覧）を作り、`scripts/chatgpt_extract.py` で
+人生相談系の会話だけ本文を Markdown 化する。価値観・悩み・家族の話が濃いソース。
+
+`twitter-archive/` と `chatgpt-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
 
 ## 進め方の原則
 
