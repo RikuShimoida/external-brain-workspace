@@ -19,6 +19,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | Evernote | ノート群 | Evernote MCP（`semantic_search` / `search_notes` / `get_note` など） |
 | X 投稿/検索 | — | Twitter MCP（`post_tweet` / `search_tweets`。**過去全件は取れない**） |
 | ChatGPT 過去会話 | `chatgpt-archive/`（全会話の索引 `conversation_map.tsv` 約4,540件 ＋ 人生相談だけ抜き出した `lifetalk/` 60件） | ローカルファイルを直接パース |
+| Google カレンダー | 予定そのもの | Google Calendar MCP（`list_events` / `search_events` / `create_event` など。予定の確認と登録に使う。**書き込む前に必ず内容を確認する**） |
 
 **重要:** 過去ツイートの網羅的な分析は Twitter MCP ではなくローカルアーカイブを使う。
 MCP の `search_tweets` は直近しか取れないため。
