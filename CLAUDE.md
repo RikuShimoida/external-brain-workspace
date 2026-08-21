@@ -16,7 +16,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | ソース | 実体 | アクセス方法 |
 |---|---|---|
 | X 過去ツイート | `twitter-archive/extracted/data/tweets.js`（約3,267件） | ローカルファイルを直接パース |
-| Evernote | ノート群 | Evernote MCP（`semantic_search` / `search_notes` / `get_note` など） |
+| Evernote | ノート群（約8,463件） | **両輪で参照**（下記） |
 | X 投稿/検索 | — | Twitter MCP（`post_tweet` / `search_tweets`。**過去全件は取れない**） |
 | ChatGPT 過去会話 | `chatgpt-archive/`（全会話の索引 `conversation_map.tsv` 約4,540件 ＋ 人生相談だけ抜き出した `lifetalk/` 60件） | ローカルファイルを直接パース |
 | Google カレンダー | 予定そのもの | Google Calendar MCP（`list_events` / `search_events` / `create_event` など。予定の確認と登録に使う。**書き込む前に必ず内容を確認する**） |
@@ -28,7 +28,26 @@ ChatGPT アーカイブは ZIP を全展開せず、まず `scripts/chatgpt_map.
 （日付・タイトル・メッセージ数だけの一覧）を作り、`scripts/chatgpt_extract.py` で
 人生相談系の会話だけ本文を Markdown 化する。価値観・悩み・家族の話が濃いソース。
 
-`twitter-archive/` と `chatgpt-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
+Evernote は「クラウドに置いたまま」が原則。ローカルに本文を落とさない
+（ディスクを圧迫せず、エクスポート作業なしで常に最新が読めるため）。
+そのうえで、**取りこぼしを減らすために2つの入口を必ず両方使う**。
+
+1. **キーワード検索**（全ノートが対象）… `semantic_search` / `search_notes` を
+   テーマを変えて複数回投げる。全8,463件がそのまま母集団。
+2. **地図から当たりをつける**（全ノートが対象）… `evernote-archive/note_map.tsv` に
+   全ノートのメタデータ（作成日・更新日・ノートブック・タイトル・ノートID）だけを持つ。
+   タイトル一覧を眺めて関連しそうなノートを選び、`get_note` で本文だけクラウドから取る。
+
+**重要:** 2 は 1 の絞り込みではない。**独立した2本の経路**として走らせ、
+両方の結果を合わせる。地図をフィルタとして使い、検索の母集団を狭めてはいけない。
+目的は「なるべく多くのデータを参考にすること」。
+
+地図は MCP 経由でしか作れない（Evernote は Python から叩けないため、他のソースのような
+`scripts/*.py` は存在しない）。初回生成も更新も Claude が `search_notes` を叩いて行う。
+更新は `updated:day-N` で差分だけ取り直せばよく、オーナーの手作業は不要。
+全件の作り直しは重いので**サブエージェントに隔離**する。
+
+`twitter-archive/` `chatgpt-archive/` `evernote-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
 
 ## 進め方の原則
 

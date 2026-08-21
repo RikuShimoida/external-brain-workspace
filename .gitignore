@@ -27,3 +27,6 @@ note-drafts/
 decisions/
 
 .vscode/
+
+# Evernote のノート地図（タイトル等のメタデータ。本文は含まないが個人データ）
+evernote-archive/
