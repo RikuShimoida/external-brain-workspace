@@ -23,10 +23,18 @@ description: Evernote にある失敗の振り返りノート（ボイスメモ�
 
 ### 1. ノートを特定する
 
-- 共有URL（`https://share.evernote.com/note/<GUID>`）が渡された場合、**末尾の GUID が
-  そのまま noteId**。`mcp__evernote__get_note` にそれを渡せば読める。
-- URL が無い場合は `search_notes` / `semantic_search` でノートを探し、**候補を出して確認する**
-  （どのノートか勝手に決めない）。
+典型的な呼ばれ方は **`/postmortem <Evernote の URL>`**（URL だけ貼られることもある）。
+
+- **渡された文字列から GUID（`8-4-4-4-12` 桁の16進、例 `a7f1baa8-4d87-49af-472a-b8cf97d5ebd3`）を
+  抜き出し、それをそのまま `noteId` として `mcp__evernote__get_note` に渡す。**
+  URL の形は問わない。Evernote は同じノートを複数の形式でリンクするが、**どれも GUID を含む**:
+  - 共有リンク: `https://share.evernote.com/note/<GUID>`
+  - アプリの「ノートリンクをコピー」: `https://www.evernote.com/shard/s◯◯/nl/<id>/<GUID>/`
+  - 内部リンク: `evernote:///view/<id>/s◯◯/<GUID>/<GUID>/`
+  - GUID が複数含まれる場合は**最初に現れたもの**を使い、`get_note` が失敗したら次を試す。
+- GUID が見つからない／URL が無い場合は `search_notes` / `semantic_search` でノートを探し、
+  **候補を出して確認する**（どのノートか勝手に決めない）。
+- 取得したノートのタイトルを**必ず一言添えてから**作業に入る（別のノートを掴んでいないかの確認）。
 
 ### 2. 材料を読む
 
