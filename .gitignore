@@ -30,3 +30,12 @@ decisions/
 
 # Evernote のノート地図（タイトル等のメタデータ。本文は含まないが個人データ）
 evernote-archive/
+
+# 成長分析などの分析結果（過去投稿・ノートからの個人的な引用を含む）
+analysis/
+
+# LINE のトーク履歴（本人と相手の個人データ）
+line-archive/
+
+# Python のキャッシュ
+__pycache__/

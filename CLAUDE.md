@@ -20,6 +20,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | X 投稿/検索 | — | Twitter MCP（`post_tweet` / `search_tweets`。**過去全件は取れない**） |
 | ChatGPT 過去会話 | `chatgpt-archive/`（全会話の索引 `conversation_map.tsv` 約4,540件 ＋ 人生相談だけ抜き出した `lifetalk/` 60件） | ローカルファイルを直接パース |
 | Google カレンダー | 予定そのもの | Google Calendar MCP（`list_events` / `search_events` / `create_event` など。予定の確認と登録に使う。**書き込む前に必ず内容を確認する**） |
+| LINE トーク履歴 | `line-archive/`（7ルーム 約21,933件の地図 `talk_map.tsv` ＋ 濃い日だけ抜き出した `deep/` 39件） | ローカルファイルを直接パース（**MCP では取れない**） |
 
 **重要:** 過去ツイートの網羅的な分析は Twitter MCP ではなくローカルアーカイブを使う。
 MCP の `search_tweets` は直近しか取れないため。
@@ -27,6 +28,18 @@ MCP の `search_tweets` は直近しか取れないため。
 ChatGPT アーカイブは ZIP を全展開せず、まず `scripts/chatgpt_map.py` で「地図」
 （日付・タイトル・メッセージ数だけの一覧）を作り、`scripts/chatgpt_extract.py` で
 人生相談系の会話だけ本文を Markdown 化する。価値観・悩み・家族の話が濃いソース。
+
+LINE も同じ2段構え。`scripts/line_map.py` で「地図」（1日ぶんの件数・文字数だけの一覧）を作り、
+`scripts/line_extract.py` でその日の最長メッセージが 300 字を超える日だけ本文を Markdown 化する。
+合計文字数ではなく**最長メッセージ**で選ぶのは、長文が数件の日（仕組みの設計・相談）と
+短文が大量に飛び交う日（友人との雑談）を分けるため。パースは `scripts/line_parse.py` に集約。
+
+Evernote が「整理された結果」なのに対し、LINE には**家族に相談しながら仕組みを作っていく過程**が残る。
+ただし**相手の発言が必ず含まれる**ので、Podcast / note / ツイートの素材にするときは
+引用の扱いを他ソースより厳しくすること。
+
+**重要:** LINE の個人トーク履歴は API では取れない（Messaging API はボット向け）。
+取得はアプリからの手動エクスポート（`トーク設定 → トーク履歴を送信`）一択で、ルームごとにオーナーの手作業が要る。
 
 Evernote は「クラウドに置いたまま」が原則。ローカルに本文を落とさない
 （ディスクを圧迫せず、エクスポート作業なしで常に最新が読めるため）。
@@ -47,7 +60,7 @@ Evernote は「クラウドに置いたまま」が原則。ローカルに本�
 更新は `updated:day-N` で差分だけ取り直せばよく、オーナーの手作業は不要。
 全件の作り直しは重いので**サブエージェントに隔離**する。
 
-`twitter-archive/` `chatgpt-archive/` `evernote-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
+`twitter-archive/` `chatgpt-archive/` `evernote-archive/` `line-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
 
 ## 進め方の原則
 
