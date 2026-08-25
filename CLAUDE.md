@@ -74,6 +74,9 @@ BeerSalon から横展開した開発ルール。作業時は必ず従うこと�
 
 - **作業はブランチを切ってから。** `main` に直接コミットせず、`feature/<issue番号>-<スラッグ>` でブランチを作り、PR 経由でマージする。詳細は [.claude/rules/git-workflow.md](.claude/rules/git-workflow.md)。
 - **Bash の `description` は日本語で書く。** コマンドの確認を求めるときは目的・影響・リスクを明示する。詳細は [.claude/rules/command-rules.md](.claude/rules/command-rules.md)。
+- **実装は worktree で行い、司令塔（`main`）は clean に保つ。** 1タスク = 1 worktree（`.claude/worktrees/<branch>`）。
+  入口は `/plan`（計画）→ `/impl`（実装〜PR）→ `/merge`（マージ）。複数 Issue を一度に流すときだけ `/parallel`。
+  設計の全体像と共有資源の制約は [docs/worktree-workflow.md](docs/worktree-workflow.md)。
 
 ## スキルとエージェント
 
@@ -97,8 +100,15 @@ BeerSalon から横展開した開発ルール。作業時は必ず従うこと�
   - 原因分析では固有の3レンズ（**3つ以上同時にやってなかったか / 失敗種別は ADHD か / 心得「自分を信用するな」の何に違反したか**）を必ず当てる。材料が無いレンズは埋めずに「要確認」と書く（捏造しない）。
   - 再発防止策は**意志ではなく環境を変える**形にする。「気をつける」は対策として無効。物差しは `references/postmortem-criteria.md`。
   - ノート下部の「書き方例」には同じ見出しがサンプル入りで存在するので触らない。`edit_note` は `--en-nodeId` 付きの見出しを含めた **1回の `replace`** でまとめて差し替える。
+- 開発フローのスキル（BeerSalon から移植。詳細は [docs/worktree-workflow.md](docs/worktree-workflow.md)）
+  - `/plan <Issue>` … Issue から実装計画を表形式で出す。実装も Git 操作もしない。
+  - `/impl <Issue>` … `main` 起点で worktree を作り、実装 → 検証 → コミット → PR → worktree 撤去まで。**司令塔自身が実行する**（分岐でオーナーに聞ける場所に居続けるため）。`--no-worktree` で従来のブランチ方式に切り替えられる。
+  - `/parallel <Issue...>` … 複数 Issue を `external-brain-engineer` サブエージェントで同時に流す薄い司令塔。**アーカイブ・生成物を書き換えるタスクと MCP への書き込みは並列に流さない**（全 worktree でリンク共有されているため）。
+  - `/merge <PR>` … Merge commit でマージし、ブランチ削除と司令塔 `main` の最新化まで。マージの可否は必ずオーナーが決める。
 - サブエージェント `podcast-idea-miner`（`.claude/agents/podcast-idea-miner.md`）
   - 候補ツイートの指定範囲、または Evernote を走査し、ポエム/哲学系の言葉だけを構造化 JSON で返す発掘専用。
+- サブエージェント `external-brain-engineer`（`.claude/agents/external-brain-engineer.md`）
+  - `/impl`・`/parallel` の実装担当。worktree 内で実装し、実際に走らせて件数を実測してから報告する。外部サービスへは書き込まない。
 
 ## オーナーの人物像（外部脳から合成した理解）
 
