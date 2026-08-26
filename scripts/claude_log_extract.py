@@ -1,19 +1,25 @@
 #!/usr/bin/env python3
 """Claude Code の会話ログから「濃いセッション」だけ本文を抽出する。
 
-そのセッションでいちばん長い発言が閾値を超えるものだけを Markdown 化する。
+そのセッションでいちばん長い**自筆の**発言が閾値を超えるものだけを Markdown 化する。
 発言の中央値は 17 字（「はい」「OK」などの相槌）で、合計文字数で選ぶと相槌の多い
 セッションが上位に来てしまう。LINE と同じく「最長発言」で見ると、
 設計や相談を書き下したセッションだけを拾える。
 
+ただし**長さだけで見ると貼り付けに引っかかる**。リリースノートを1万字貼っただけの
+セッションが上位に来てしまうため、物差しには貼り付け・定型文を除いた `longest_self` を使う
+（判定の中身は claude_log_parse.py の docstring を参照）。
+
 抜き出すのはそのセッションの発言全部。長文だけ切り出すと前後の文脈が消えるため。
+貼り付け・定型文と判定した発言も**消さずに見出しへ印を付けて残す**（元ログは30日で消えるので、
+判定を外して本人の言葉を落とすほうが害が大きい）。
 Claude 側の応答は入れない（膨大なうえ、外部脳として要るのは本人の言葉のほう）。
 
 元ログ（~/.claude/projects/）は読むだけで、書き換えも削除もしない。
 
 使い方:
     python3 scripts/claude_log_extract.py [閾値] [--dry-run] [--project 名前] [--root パス]
-      閾値        … そのセッションの最長発言の文字数の下限（既定 100）
+      閾値        … そのセッションの自筆の最長発言の文字数の下限（既定 100）
       --dry-run   … 書き出さず対象セッションだけ表示
       --project   … プロジェクト名で絞る（部分一致）
       --root      … ログの置き場（既定: ~/.claude/projects）
@@ -30,6 +36,9 @@ from claude_log_parse import LOG_ROOT, iter_sessions
 
 OUTDIR = "claude-log-archive/deep"
 THRESHOLD = 100
+
+# 発言の見出しに付ける印。本人の言葉と貼り付けを読み手が区別できるようにするためのもの。
+KIND_MARK = {"pasted": "（貼り付け）", "template": "（定型文）"}
 
 
 def safe_name(s):
@@ -61,22 +70,23 @@ def main():
     picked = [
         s
         for s in sessions
-        if s.longest >= threshold
+        if s.longest_self >= threshold
         and (project_filter is None or project_filter in s.project)
     ]
 
     total_u = sum(len(s.utterances) for s in picked)
     total_c = sum(s.chars for s in picked)
     print(
-        f"最長 {threshold} 字以上のセッション: {len(picked)} 件"
+        f"自筆の最長 {threshold} 字以上のセッション: {len(picked)} 件"
         f"（発言 {total_u:,} 件 / 本文計 {total_c:,} 字）"
     )
 
     if dry:
         for s in picked:
+            mark = " 貼付あり" if s.count("pasted") or s.count("template") else ""
             print(
                 f"  {s.date}  {s.project[:24]:<24} {len(s.utterances):>3}件"
-                f"  最長{s.longest:>6,}字  {s.title[:32]}"
+                f"  自筆最長{s.longest_self:>6,}字{mark}  {s.title[:32]}"
             )
         return
 
@@ -90,10 +100,11 @@ def main():
                 f"- プロジェクト: {s.project}\n"
                 f"- セッション: {s.session_id}\n"
                 f"- 発言数: {len(s.utterances)}\n"
-                f"- 最長: {s.longest} 字\n\n---\n\n"
+                f"- 自筆の最長: {s.longest_self} 字\n"
+                f"- 貼り付け: {s.count('pasted')} 件 / 定型文: {s.count('template')} 件\n\n---\n\n"
             )
             for u in s.utterances:
-                w.write(f"**{u.timestamp}:**\n\n{u.text}\n\n")
+                w.write(f"**{u.timestamp}{KIND_MARK.get(u.kind, '')}:**\n\n{u.text}\n\n")
     print(f"{len(picked)} 件を {OUTDIR}/ に書き出しました。")
 
 

@@ -5,6 +5,10 @@
 一覧化する。どのセッションが濃いかをタイトルで眺めて、claude_log_extract.py で
 本文を取るセッションを選ぶための下ごしらえ。
 
+貼り付けた他人の文章は**消さずに列で印を付ける**（`pasted` / `template`）。
+濃さの物差しは「最長発言」ではなく「自筆の最長発言」（`longest_self`）のほうを見る。
+判定の中身は claude_log_parse.py の docstring を参照。
+
 元ログ（~/.claude/projects/）は読むだけで、書き換えも削除もしない。
 
 使い方:
@@ -46,11 +50,15 @@ def main():
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as w:
-        w.write("date\tproject\tsession\ttitle\tutterances\tchars\tlongest\n")
+        w.write(
+            "date\tproject\tsession\ttitle\tutterances\tchars"
+            "\tlongest\tlongest_self\tpasted\ttemplate\n"
+        )
         for s in sessions:
             w.write(
                 f"{s.date}\t{clean(s.project)}\t{s.session_id}\t{clean(s.title)}"
-                f"\t{len(s.utterances)}\t{s.chars}\t{s.longest}\n"
+                f"\t{len(s.utterances)}\t{s.chars}\t{s.longest}\t{s.longest_self}"
+                f"\t{s.count('pasted')}\t{s.count('template')}\n"
             )
 
     # サマリ
@@ -61,6 +69,13 @@ def main():
     print(f"本人の発言: {total_u:,} 件 / {total_c:,} 字")
     if dates:
         print(f"期間: {dates[0]} 〜 {dates[-1]}")
+
+    # 貼り付け・定型文の内訳（消さずに印を付けているだけなので、上の総数にも含まれている）
+    for kind, label in (("pasted", "貼り付け"), ("template", "定型文")):
+        n = sum(s.count(kind) for s in sessions)
+        c = sum(len(u.text) for s in sessions for u in s.utterances if u.kind == kind)
+        share = c / total_c if total_c else 0
+        print(f"  うち{label}: {n:,} 件 / {c:,} 字（全体の {share:.1%}）")
 
     by_project = Counter()
     chars_by_project = Counter()
@@ -76,9 +91,13 @@ def main():
     for m in sorted(by_month):
         print(f"  {m}: {by_month[m]}")
 
-    print("\n濃いセッション（最長発言の上位10件）:")
-    for s in sorted(sessions, key=lambda s: -s.longest)[:10]:
-        print(f"  {s.date} {s.project[:24]:<24} 最長{s.longest:>6,}字 / {len(s.utterances):>3}件  {clean(s.title)[:32]}")
+    print("\n濃いセッション（自筆の最長発言の上位10件）:")
+    for s in sorted(sessions, key=lambda s: -s.longest_self)[:10]:
+        mark = " 貼付あり" if s.count("pasted") or s.count("template") else ""
+        print(
+            f"  {s.date} {s.project[:24]:<24} 自筆最長{s.longest_self:>6,}字"
+            f" / {len(s.utterances):>3}件{mark}  {clean(s.title)[:32]}"
+        )
 
     print(f"\n一覧を書き出しました: {OUT}")
 

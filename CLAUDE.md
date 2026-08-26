@@ -21,7 +21,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | ChatGPT 過去会話 | `chatgpt-archive/`（索引 `conversation_map.tsv` 約4,540件 ＋ `lifetalk/` 60件） | ローカルファイルを直接パース |
 | Google カレンダー | 予定そのもの | Google Calendar MCP（`list_events` / `create_event` 等。**書き込む前に必ず内容を確認**） |
 | LINE トーク履歴 | `line-archive/`（7ルーム 約21,933件の地図 `talk_map.tsv` ＋ `deep/` 39件） | ローカルファイルを直接パース（**MCP では取れない**） |
-| Claude Code 過去ログ | `claude-log-archive/`（144セッションの地図 `session_map.tsv` ＋ `deep/` 35件） | 元ログ `~/.claude/projects/` から抽出（**リポジトリ外・30日で自動削除**） |
+| Claude Code 過去ログ | `claude-log-archive/`（126セッションの地図 `session_map.tsv` ＋ `deep/` 33件） | 元ログ `~/.claude/projects/` から抽出（**リポジトリ外・30日で自動削除**） |
 | Gmail | 送信済み **1,213通 / 602スレッド**（2017年12月〜。受信箱 166,476通はノイズが大半） | Gmail MCP（`list_labels` / `search_threads` / `get_message`。**読み取り専用**） |
 | Kindle ハイライト | `kindle-archive/`（**35冊 766件**の地図 `book_map.tsv` ＋ 1冊1ファイルの `books/`） | ブラウザで `read.amazon.co.jp/notebook` から吸い出して直接パース（**API も MCP も無い**） |
 
