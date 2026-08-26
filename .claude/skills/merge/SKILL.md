@@ -69,13 +69,20 @@ gh issue view <N> --json number,state,title
 
 ```bash
 git pull --ff-only origin main
-git branch -d <headRefName>
+# ローカルに残っている場合だけ削除する（手順2の --delete-branch が既に消していることが多い）
+git branch -d <headRefName> 2>/dev/null || echo "ローカルブランチは既に削除済み"
 git fetch --prune origin
 ```
 
 - `--ff-only` が失敗する場合は、勝手に rebase / merge せず報告して指示を仰ぐ。
+- **手順2の `gh pr merge --delete-branch` は、司令塔が別ブランチ（`main`）に居れば
+  ローカルブランチも一緒に削除する**（2026-08-26 に PR #25 で実測）。
+  そのため `git branch -d` は「残っていれば消す」程度の後始末であり、
+  `branch ... not found` は正常な結果として扱ってよい。**エラーとして報告しない。**
 - `git branch -d`（小文字）を使う。マージ済みでなければ削除を拒否する安全側の動作。
-  **失敗しても `-D` へ勝手に切り替えない**（未マージのコミットが残っている可能性があるため報告する）。
+  **`not fully merged` で失敗した場合は `-D` へ勝手に切り替えない**
+  （未マージのコミットが残っている可能性があるため報告する）。
+  `not found`（既に削除済み）と `not fully merged`（未マージ）を混同しないこと。
 - 対象ブランチの worktree が残っている場合（通常は `/impl` の 2-3 で撤去済み）は、
   先に `git worktree remove` してからブランチを削除する。
 
@@ -83,7 +90,7 @@ git fetch --prune origin
 
 1. マージした PR 番号・タイトル・URL
 2. クローズされた Issue 番号（自動 / 手動のどちらか）
-3. 削除したブランチ（リモート / ローカル）
+3. 削除したブランチ（リモート / ローカル。手順2で既に消えていたならその旨でよい）
 4. 司令塔 `main` の最新コミット
 5. 異常があればその内容と、オーナーに委ねた判断
 
