@@ -24,11 +24,30 @@ claude_log_map.py（地図づくり）と claude_log_extract.py（本文抽出�
 タスク通知など）を取り除く。**レコードごと捨てずにタグ部分だけ削る**のは、
 1つのレコードに本人の発言と system-reminder が同居する場合があり、
 丸ごと捨てると本人の言葉まで失うため。削った結果が空になったものだけを捨てる。
+
+## 貼り付けの判定（kind）
+
+ここまでを通っても、**本人が打った文字と本人が貼り付けた他人の文章は同じ形で入る**。
+どちらも `type: "user"` だから。実測では本人の発言 80,214字のうち 32,445字（40.4%）が
+貼り付け（VS Code のリリースノート等）で、しかもそれが最長発言の上位を占めるため、
+「最長発言で濃さを測る」やり方だと貼り付けがあるだけでそのセッションが選ばれてしまう。
+
+そこで発言1件ごとに `kind` を付ける。**捨てるのではなく印を付けるだけ**にしてある。
+元ログは30日で消えるので、判定を外して本人の長文を落とすほうが害が大きいため
+（迷ったら残す側に倒す）。
+
+  - `self` ……… 本人が打った文字。既定
+  - `pasted` …… 貼り付けた他人の文章（英文のリリースノート、文字起こしなど）
+  - `template` … 本人が書いた定型文（要件定義テンプレートなど）。他人の文章とは別物なので分ける
+
+判定するのは 1,000字以上の発言だけ。それ未満は無条件で `self` にする
+（実測で 1,000字以上は 848件中 8件しかなく、短い発言に判定を効かせても誤爆が増えるだけ）。
 """
 import os
 import re
 import json
 import glob
+from collections import Counter
 
 LOG_ROOT = os.path.expanduser("~/.claude/projects")
 
@@ -47,32 +66,61 @@ NOISE_LINE_RE = re.compile(
     re.MULTILINE,
 )
 
+# --- 貼り付け判定のしきい値（すべて実測で決めた値。docs/data-sources.md 参照） ---
+LONG_CHARS = 1000       # これ未満は判定せず self 扱い（残す側に倒す）
+JA_MIN_RATIO = 0.05     # 日本語文字がこれ未満なら英文の貼り付けとみなす
+SPEAKER_MIN = 3         # 話者ラベルがこれ以上なら文字起こしの貼り付けとみなす
+HEADING_MIN = 10        # Markdown 見出しがこれ以上なら定型文とみなす
+HEAD_KEY_CHARS = 150    # 使い回しの検出に使う冒頭の文字数
+
+JA_RE = re.compile(r"[぀-ヿ一-鿿]")
+SPEAKER_RE = re.compile(r"^\s*\[?(?:Speaker\s*\d+|話者\s*\d+)\]?\s*[:：]", re.MULTILINE | re.IGNORECASE)
+HEADING_RE = re.compile(r"^#{1,6} ", re.MULTILINE)
+
 
 class Utterance:
     """オーナーの発言1件。"""
 
-    __slots__ = ("date", "timestamp", "text")
+    __slots__ = ("date", "timestamp", "text", "kind")
 
-    def __init__(self, date, timestamp, text):
+    def __init__(self, date, timestamp, text, kind="self"):
         self.date = date            # "2026-08-26"
         self.timestamp = timestamp  # ISO8601 のまま
         self.text = text            # 運用系タグを取り除いた本文
+        self.kind = kind            # "self" / "pasted" / "template"
+
+    @property
+    def is_self(self):
+        """本人が打った文字か（貼り付け・定型文でないか）。"""
+        return self.kind == "self"
 
     def __repr__(self):
-        return f"<{self.date} {self.text[:20]}...>"
+        return f"<{self.date} [{self.kind}] {self.text[:20]}...>"
 
 
 class Session:
     """1セッション（= JSONL 1ファイル）ぶんの発言。"""
 
-    __slots__ = ("path", "project", "session_id", "title", "utterances")
+    __slots__ = ("path", "project", "session_id", "ai_title", "utterances")
 
-    def __init__(self, path, project, session_id, title, utterances):
+    def __init__(self, path, project, session_id, ai_title, utterances):
         self.path = path
         self.project = project          # "BeerSalon"
         self.session_id = session_id    # ファイル名の UUID
-        self.title = title              # ai-title があればそれ、無ければ初回発言の冒頭
+        self.ai_title = ai_title        # ログに ai-title があればその文字列、無ければ None
         self.utterances = utterances
+
+    @property
+    def title(self):
+        """ai-title があればそれ、無ければ**自筆の**初回発言の冒頭。
+
+        貼り付けで始まるセッションのタイトルが "Visual Studio Code 1.133 ..." に
+        なってしまうのを避けるため、fallback は self の発言から取る。
+        """
+        if self.ai_title:
+            return self.ai_title
+        source = next((u for u in self.utterances if u.is_self), None) or self.utterances[0]
+        return source.text.replace("\n", " ")[:40]
 
     @property
     def date(self):
@@ -85,8 +133,17 @@ class Session:
 
     @property
     def longest(self):
-        """いちばん長い発言の文字数。濃いセッションを選ぶ物差しに使う。"""
+        """いちばん長い発言の文字数（貼り付けを含む）。"""
         return max((len(u.text) for u in self.utterances), default=0)
+
+    @property
+    def longest_self(self):
+        """いちばん長い**自筆の**発言の文字数。濃いセッションを選ぶ物差しはこちらを使う。"""
+        return max((len(u.text) for u in self.utterances if u.is_self), default=0)
+
+    def count(self, kind):
+        """指定した kind の発言数。"""
+        return sum(1 for u in self.utterances if u.kind == kind)
 
 
 def strip_noise(text):
@@ -94,6 +151,41 @@ def strip_noise(text):
     text = NOISE_BLOCK_RE.sub("", text)
     text = NOISE_LINE_RE.sub("", text)
     return text.strip()
+
+
+def classify(text):
+    """発言1件を self / pasted / template に振り分ける。
+
+    使い回し（同じ長文が複数セッションに現れる）だけはこの関数では見られないので、
+    全セッションを読み終えたあとに mark_reused() が template へ格上げする。
+    """
+    if len(text) < LONG_CHARS:
+        return "self"
+    if len(JA_RE.findall(text)) / len(text) < JA_MIN_RATIO:
+        return "pasted"      # 日本語がほぼ無い長文。英文ドキュメントの貼り付け
+    if len(SPEAKER_RE.findall(text)) >= SPEAKER_MIN:
+        return "pasted"      # "[Speaker 1]:" が並ぶ。文字起こしの貼り付け
+    if len(HEADING_RE.findall(text)) >= HEADING_MIN:
+        return "template"    # 見出しが並ぶ長文。指示書・テンプレートの類
+    return "self"
+
+
+def mark_reused(sessions):
+    """複数セッションに同じ長文が現れたら定型文（template）とみなす。
+
+    要件定義テンプレートのように、本人が書いたものを毎回貼って使い回している文章がある。
+    見出しの数では拾えないものをここで拾う。冒頭 HEAD_KEY_CHARS 字が一致すれば同じ文章とみなす。
+    """
+    seen = Counter(
+        u.text[:HEAD_KEY_CHARS]
+        for s in sessions
+        for u in s.utterances
+        if len(u.text) >= LONG_CHARS
+    )
+    for s in sessions:
+        for u in s.utterances:
+            if u.is_self and len(u.text) >= LONG_CHARS and seen[u.text[:HEAD_KEY_CHARS]] >= 2:
+                u.kind = "template"
 
 
 def _content_text(message):
@@ -162,14 +254,13 @@ def parse(path):
             if project is None:
                 project = project_name(record, path)
             timestamp = record.get("timestamp", "")
-            utterances.append(Utterance(timestamp[:10], timestamp, text))
+            utterances.append(Utterance(timestamp[:10], timestamp, text, classify(text)))
 
     if not utterances:
         return None
 
-    title = ai_title or utterances[0].text.replace("\n", " ")[:40]
     session_id = os.path.basename(path).removesuffix(".jsonl")
-    return Session(path, project or "?", session_id, title, utterances)
+    return Session(path, project or "?", session_id, ai_title, utterances)
 
 
 def iter_sessions(root=LOG_ROOT):
@@ -179,5 +270,6 @@ def iter_sessions(root=LOG_ROOT):
         session = parse(path)
         if session:
             sessions.append(session)
+    mark_reused(sessions)
     sessions.sort(key=lambda s: (s.date, s.project, s.session_id))
     return sessions
