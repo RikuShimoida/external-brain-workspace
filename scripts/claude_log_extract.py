@@ -17,6 +17,10 @@ Claude 側の応答は入れない（膨大なうえ、外部脳として要る�
 
 元ログ（~/.claude/projects/）は読むだけで、書き換えも削除もしない。
 
+**書き出しは追記型で、既存のファイルを消さない。** 選定から外れた `deep/` のファイルも残す。
+元ログが消えたセッションの抽出物はここにしか無く、消すと二度と再生成できないため
+（`claude_log_sync.py` で定期実行しても過去の抽出物が減らないのは、この性質に拠っている）。
+
 使い方:
     python3 scripts/claude_log_extract.py [閾値] [--dry-run] [--project 名前] [--root パス]
       閾値        … そのセッションの自筆の最長発言の文字数の下限（既定 100）
@@ -91,8 +95,11 @@ def main():
         return
 
     os.makedirs(OUTDIR, exist_ok=True)
+    fresh = 0
     for s in picked:
         fname = f"{OUTDIR}/{s.date}_{safe_name(s.project)}_{s.session_id[:8]}.md"
+        if not os.path.exists(fname):
+            fresh += 1
         with open(fname, "w", encoding="utf-8") as w:
             w.write(f"# {s.title}\n\n")
             w.write(
@@ -105,7 +112,10 @@ def main():
             )
             for u in s.utterances:
                 w.write(f"**{u.timestamp}{KIND_MARK.get(u.kind, '')}:**\n\n{u.text}\n\n")
-    print(f"{len(picked)} 件を {OUTDIR}/ に書き出しました。")
+    print(
+        f"{len(picked)} 件を {OUTDIR}/ に書き出しました"
+        f"（新規 {fresh} 件 / 更新 {len(picked) - fresh} 件）。"
+    )
 
 
 if __name__ == "__main__":
