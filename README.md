@@ -60,3 +60,24 @@ Evernote 公式のリモート MCP サーバー（`https://mcp.evernote.com/mcp`
 `/mcp` で `evernote` サーバーが接続済み（connected）になっていることを確認してください。
 
 > 補足: 公式 Evernote MCP はベータ版です。問題があれば Evernote のサポートチケットにメッセージ「MCP」と記載して報告できます。
+
+## Gmail（claude.ai コネクタ）のセットアップ
+
+Gmail は Twitter / Evernote と違い、**`.mcp.json` では設定できません**。claude.ai 側のコネクタとして認可します。
+
+### 1. claude.ai で認可
+
+claude.ai のコネクタ設定を開き、Gmail を認可します。Claude Code のセッション内から認可フローを走らせることはできません。
+
+### 2. Claude Code を再起動する（重要）
+
+**MCP コネクタは Claude Code の起動時に読み込まれます。** claude.ai で認可しても、すでに動いているセッションには反映されません。必ず起動し直してください。
+
+```bash
+# いったん終了してから
+./scripts/claude.sh
+```
+
+### 3. 動作確認
+
+`list_labels` を呼んで `SENT` の件数が返れば接続できています。読み取り3種（`list_labels` / `search_threads` / `get_message`）だけを使い、送信・削除・ラベル変更などの書き込み系ツールは使いません（`CLAUDE.md` のデータソース節を参照）。
