@@ -11,13 +11,13 @@ CLAUDE.md は毎ターン context に乗る固定費なので、**Read で足り
 ## 全体の設計
 
 `twitter-archive/` `chatgpt-archive/` `evernote-archive/` `line-archive/` `claude-log-archive/`
-は個人データなので Git 管理外（`.gitignore` 済み）。
+`kindle-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
 
 ローカルに落とすか、クラウドに置いたままかは、ソースごとに使い分ける。
 
 | 方式 | ソース | 理由 |
 |---|---|---|
-| ローカルに落とす | X / ChatGPT / LINE / Claude Code ログ | エクスポートが手作業 or 元ログが消える |
+| ローカルに落とす | X / ChatGPT / LINE / Claude Code ログ / Kindle | エクスポートが手作業 or 元ログが消える |
 | クラウドに置いたまま | Evernote / Gmail / カレンダー | 常に最新が読める。ディスクを圧迫しない |
 
 大きいソースは **2段構え**（まず軽い「地図」を作り、濃いところだけ本文を取る）で扱う。
@@ -137,6 +137,35 @@ X / Evernote / ChatGPT が「自分の内側の言葉」なのに対し、Gmail 
 **時系列の事実**（いつ何が動いたか）の記録。ただし**全ソース中で最も機微度が高い**ので、
 Podcast / note / ツイートの素材にするときは LINE よりさらに厳しく扱う。
 相手の氏名・メールアドレス・社名・案件の条件は、そのまま成果物に出さないこと。
+
+## Kindle ハイライト
+
+- 実体: `kindle-archive/`（地図 `book_map.tsv` ＋ 1冊1ファイルの `books/`）
+- 実測 **本棚43冊 → 線を引いていた35冊・766件・約6.0万字**（2026-08-26。取得失敗0件）
+
+LINE と同じ「API が無いので手動エクスポート一択」型。`read.amazon.co.jp/notebook` を
+ログイン済みのブラウザで開き、[kindle-export.md](kindle-export.md) の JS を DevTools に貼って
+`highlights.json` を落とす。以降は `scripts/kindle_map.py`（地図）→
+`scripts/kindle_extract.py`（1冊1 Markdown）→ `scripts/kindle_match.py`（`books` の56冊と突き合わせ）。
+
+**重要: ここでは濃さの閾値で間引かない。** 他ソースと違い、ハイライトは
+**オーナーが読みながら既に選び終えた文**であり、こちらでさらに選別すると本人の選択を上書きしてしまう。
+
+**重要: Kindle の35冊と `books` の56冊はほぼ別集合。** 重なりは **4冊だけ**で、
+残り **31冊・629件（全体の82%）は `books/index.md` の外**にある。
+Kindle は技術書・実用書、Evernote の「読んできた本」は人生・仕事寄りという偏りの違い。
+そのため `books` スキルは、索引に当たりが無いとき `kindle-archive/book_map.tsv` も見に行く。
+
+**重要: このリポジトリは公開されている。** ハイライトは書籍本文の逐語引用なので
+`kindle-archive/`（`.gitignore` 済み）の外に出さない。`books` の `volumes/*.md` は Git 管理下なので、
+**本文を書かずポインタ1行だけ**を置く。Podcast / note / ツイートで使うときは引用の範囲に注意する。
+
+Kindle for Mac のローカル DB（`AnnotationStorage`）は使えない。実際に開いたところ全32行のうち
+`highlight` は1件だけで、しかも本文が空だった（2026-08-26 実測）。`My Clippings.txt` も
+実機で読んだ本しか入らず、この Mac には無い。notebook 一択。
+
+X / Evernote が「自分の言葉」なのに対し、Kindle は**他人の言葉に自分が反応した点**の記録。
+`books` の56冊が「本が何を言ったか」なら、こちらは「**本人の琴線がどこで鳴ったか**」にあたる。
 
 ## Google カレンダー
 

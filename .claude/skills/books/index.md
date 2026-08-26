@@ -6,6 +6,9 @@
 
 全56冊（うちパイロット2冊 = die-with-zero / memo-no-maryoku）。
 
+選んだ巻の frontmatter に `kindle_highlights:` があれば、そのファイル（`kindle-archive/books/`）も
+一緒に Read する。**オーナーが実際に線を引いた箇所**で、要約より本人の判断軸に近い（SKILL.md 手順 2.5）。
+
 | 書名 | ファイル | タグ |
 |---|---|---|
 | 10年後の仕事図鑑 | 10nengo-shigoto-zukan.md | 未来, 仕事, AI, キャリア, 転職, 職業, テクノロジー, 働き方, 消える仕事, 好きなこと, 信用, 掛け合わせ |

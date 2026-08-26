@@ -47,6 +47,9 @@ calendar-archive
 # Claude Code の過去ログから抽出した本人の発言（開発中の思考の記録。個人データ）
 claude-log-archive
 
+# Kindle のハイライト（書籍本文の逐語引用。公開リポジトリに載せない）
+kindle-archive
+
 # Python のキャッシュ
 __pycache__/
 
