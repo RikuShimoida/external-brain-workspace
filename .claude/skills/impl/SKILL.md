@@ -127,7 +127,8 @@ git switch -c <prefix>/$ARGUMENTS-<スラッグ>
 #### 1-4. ドキュメント同期
 
 - 変更内容に応じて `CLAUDE.md` / `README.md` / `docs/` / 対象スキルの `SKILL.md` を更新する。
-- 特に **CLAUDE.md のデータソース表・スキル一覧**は実体とズレやすいので必ず確認する。
+- 特に **CLAUDE.md のデータソース表**と **`docs/data-sources.md`** は実体とズレやすいので必ず確認する。
+- CLAUDE.md は毎ターン context に乗る固定費。詳細は `docs/` に置き、**案内板に徹させる**。
 
 ---
 

@@ -16,93 +16,25 @@ Podcast のネタとして再利用することに価値を置いている。
 | ソース | 実体 | アクセス方法 |
 |---|---|---|
 | X 過去ツイート | `twitter-archive/extracted/data/tweets.js`（約3,267件） | ローカルファイルを直接パース |
-| Evernote | ノート群（約8,463件） | **両輪で参照**（下記） |
-| X 投稿/検索 | — | Twitter MCP（`post_tweet` / `search_tweets`。**過去全件は取れない**） |
-| ChatGPT 過去会話 | `chatgpt-archive/`（全会話の索引 `conversation_map.tsv` 約4,540件 ＋ 人生相談だけ抜き出した `lifetalk/` 60件） | ローカルファイルを直接パース |
-| Google カレンダー | 予定そのもの | Google Calendar MCP（`list_events` / `search_events` / `create_event` など。予定の確認と登録に使う。**書き込む前に必ず内容を確認する**） |
-| LINE トーク履歴 | `line-archive/`（7ルーム 約21,933件の地図 `talk_map.tsv` ＋ 濃い日だけ抜き出した `deep/` 39件） | ローカルファイルを直接パース（**MCP では取れない**） |
-| Claude Code 過去ログ | `claude-log-archive/`（144セッションの地図 `session_map.tsv` ＋ 濃いセッションだけ抜き出した `deep/` 35件） | 元ログ `~/.claude/projects/` を読んで抽出（**リポジトリ外・30日で自動削除**） |
-| Gmail | 送信済み **1,213通 / 602スレッド**（2017年12月〜。受信箱は 166,476通あるがノイズが大半） | Gmail MCP（`list_labels` / `search_threads` / `get_message`。**読み取り専用で使う**。ローカルに落とさない） |
+| Evernote | ノート群（約8,463件） | **2経路で参照**（下記の厳守事項） |
+| X 投稿/検索 | — | Twitter MCP（**過去全件は取れない**） |
+| ChatGPT 過去会話 | `chatgpt-archive/`（索引 `conversation_map.tsv` 約4,540件 ＋ `lifetalk/` 60件） | ローカルファイルを直接パース |
+| Google カレンダー | 予定そのもの | Google Calendar MCP（`list_events` / `create_event` 等。**書き込む前に必ず内容を確認**） |
+| LINE トーク履歴 | `line-archive/`（7ルーム 約21,933件の地図 `talk_map.tsv` ＋ `deep/` 39件） | ローカルファイルを直接パース（**MCP では取れない**） |
+| Claude Code 過去ログ | `claude-log-archive/`（144セッションの地図 `session_map.tsv` ＋ `deep/` 35件） | 元ログ `~/.claude/projects/` から抽出（**リポジトリ外・30日で自動削除**） |
+| Gmail | 送信済み **1,213通 / 602スレッド**（2017年12月〜。受信箱 166,476通はノイズが大半） | Gmail MCP（`list_labels` / `search_threads` / `get_message`。**読み取り専用**） |
 
-**重要:** 過去ツイートの網羅的な分析は Twitter MCP ではなくローカルアーカイブを使う。
-MCP の `search_tweets` は直近しか取れないため。
+2段構えの設計・スクリプトの使い分け・件数の根拠は [docs/data-sources.md](docs/data-sources.md)。
+**アーカイブを扱う前に必ず Read すること。**
 
-ChatGPT アーカイブは ZIP を全展開せず、まず `scripts/chatgpt_map.py` で「地図」
-（日付・タイトル・メッセージ数だけの一覧）を作り、`scripts/chatgpt_extract.py` で
-人生相談系の会話だけ本文を Markdown 化する。価値観・悩み・家族の話が濃いソース。
+### 厳守事項
 
-LINE も同じ2段構え。`scripts/line_map.py` で「地図」（1日ぶんの件数・文字数だけの一覧）を作り、
-`scripts/line_extract.py` でその日の最長メッセージが 300 字を超える日だけ本文を Markdown 化する。
-合計文字数ではなく**最長メッセージ**で選ぶのは、長文が数件の日（仕組みの設計・相談）と
-短文が大量に飛び交う日（友人との雑談）を分けるため。パースは `scripts/line_parse.py` に集約。
-
-Claude Code の会話ログも同じ2段構え。`scripts/claude_log_map.py` で「地図」（セッションごとの
-タイトル・発言数・最長発言の一覧）を作り、`scripts/claude_log_extract.py` で最長発言が
-100 字を超えるセッションだけ本文を Markdown 化する。パースは `scripts/claude_log_parse.py` に集約。
-
-X / Evernote が「言葉の蓄積」なら、これは**手を動かしながらの思考**（なぜこう作ったか、どこで迷ったか）。
-ただし元ログ 212MB のうち本人の発言は **913件・約8.1万字**（抽出物にして 260KB＝元の 0.1%）しかなく、
-残りはツール出力と運用系レコードなので、
-`type: "user"` でも `tool_result` / `isSidechain` / `isMeta` のものは必ず弾く。
-
-**重要:** 元ログは `~/.claude/projects/` にあり、`cleanupPeriodDays` の既定 **30日で自動削除される**。
-参照方式では古いログが消えるため、抽出物をこちら側に持つ。取りこぼさないよう定期的に走らせること。
-スクリプトは元ログを**読むだけ**で、書き換えも削除もしない。
-
-Evernote が「整理された結果」なのに対し、LINE には**家族に相談しながら仕組みを作っていく過程**が残る。
-ただし**相手の発言が必ず含まれる**ので、Podcast / note / ツイートの素材にするときは
-引用の扱いを他ソースより厳しくすること。
-
-**重要:** LINE の個人トーク履歴は API では取れない（Messaging API はボット向け）。
-取得はアプリからの手動エクスポート（`トーク設定 → トーク履歴を送信`）一択で、ルームごとにオーナーの手作業が要る。
-
-Gmail は Evernote と同じ「クラウドに置いたまま」型。ローカルに本文を落とさない
-（第三者の個人情報・仕事の守秘情報を自分のディスクに数万件コピーしないため）。
-他ソースのような `scripts/*.py` は存在しない。Gmail は Python から叩けず、MCP 経由でしか読めない。
-
-**対象は原則「送信済みメール」に絞る。** 受信箱 166,476通に対し送信済みは 1,213通（約0.7%）で、
-残りは案件の一斉送信・通知・広告が大半。送信済みだけが**自分が書いた言葉**であり、
-他ソースと同じ「内側の言葉」として扱える。受信メールは必要なときにピンポイントで検索する。
-
-**地図を作る必要はない。オーナーが手で育てたラベルがそのまま地図になる。**
-`list_labels` で全ラベルの正確な件数が取れる。`案件メール/` 配下の10ラベル
-（Java 8,020 / AWS 5,475 / React 2,870 など計 約23,876通）は案件の打診、
-`転職` 6,814通はキャリアの動き、`サービス/` 配下は生活の記録にあたる。
-
-**重要:** 件数は `list_labels` の値を使う。`search_threads` が返す `resultCountEstimate` は
-**推定値で大きくズレる**（送信済み 602スレッドに対し 201 と返した）。件数を語るときは信用しない。
-本文を取るときは `get_message` に `messageFormat: PLAIN_TEXT` を指定する（HTML 本文で文脈を潰さないため）。
-
-**重要:** Gmail MCP には書き込み系ツールが多数ある（`send_message` / `reply` / `forward` /
-`create_draft` / `trash_message` / `label_thread` など）。**これらは使わない。**
-外部への不可逆な送信・改変であり、オーナーの承認なしに触れてよいものではない。
-読み取り3種（`list_labels` / `search_threads` / `get_message`）だけを使う。
-
-X / Evernote / ChatGPT が「自分の内側の言葉」なのに対し、Gmail は**他者との接点**と
-**時系列の事実**（いつ何が動いたか）の記録。ただし**全ソース中で最も機微度が高い**ので、
-Podcast / note / ツイートの素材にするときは LINE よりさらに厳しく扱う。
-相手の氏名・メールアドレス・社名・案件の条件は、そのまま成果物に出さないこと。
-
-Evernote は「クラウドに置いたまま」が原則。ローカルに本文を落とさない
-（ディスクを圧迫せず、エクスポート作業なしで常に最新が読めるため）。
-そのうえで、**取りこぼしを減らすために2つの入口を必ず両方使う**。
-
-1. **キーワード検索**（全ノートが対象）… `semantic_search` / `search_notes` を
-   テーマを変えて複数回投げる。全8,463件がそのまま母集団。
-2. **地図から当たりをつける**（全ノートが対象）… `evernote-archive/note_map.tsv` に
-   全ノートのメタデータ（作成日・更新日・ノートブック・タイトル・ノートID）だけを持つ。
-   タイトル一覧を眺めて関連しそうなノートを選び、`get_note` で本文だけクラウドから取る。
-
-**重要:** 2 は 1 の絞り込みではない。**独立した2本の経路**として走らせ、
-両方の結果を合わせる。地図をフィルタとして使い、検索の母集団を狭めてはいけない。
-目的は「なるべく多くのデータを参考にすること」。
-
-地図は MCP 経由でしか作れない（Evernote は Python から叩けないため、他のソースのような
-`scripts/*.py` は存在しない）。初回生成も更新も Claude が `search_notes` を叩いて行う。
-更新は `updated:day-N` で差分だけ取り直せばよく、オーナーの手作業は不要。
-全件の作り直しは重いので**サブエージェントに隔離**する。
-
-`twitter-archive/` `chatgpt-archive/` `evernote-archive/` `line-archive/` `claude-log-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
+- **Evernote は「検索」と「地図」の2経路を必ず両方走らせる。** 地図で母集団を狭めない。
+- **過去ツイートの網羅分析はローカルアーカイブで。** `search_tweets` は直近しか取れない。
+- **Gmail MCP の書き込み系は使わない。** 読み取り3種のみ。
+- **LINE / Gmail は第三者の情報を含む。** 氏名・社名・連絡先を成果物に出さない。
+- **Claude Code の元ログは30日で消える。** 定期的に抽出を回す。
+- `*-archive/` は個人データ。Git 管理外。
 
 ## 進め方の原則
 
@@ -112,45 +44,13 @@ Evernote は「クラウドに置いたまま」が原則。ローカルに本�
 
 ## 開発ルール
 
-BeerSalon から横展開した開発ルール。作業時は必ず従うこと。
+詳細は [.claude/rules/](.claude/rules/) と [docs/worktree-workflow.md](docs/worktree-workflow.md)。
 
-- **作業はブランチを切ってから。** `main` に直接コミットせず、`feature/<issue番号>-<スラッグ>` でブランチを作り、PR 経由でマージする。詳細は [.claude/rules/git-workflow.md](.claude/rules/git-workflow.md)。
-- **Bash の `description` は日本語で書く。** コマンドの確認を求めるときは目的・影響・リスクを明示する。詳細は [.claude/rules/command-rules.md](.claude/rules/command-rules.md)。
-- **実装は worktree で行い、司令塔（`main`）は clean に保つ。** 1タスク = 1 worktree（`.claude/worktrees/<branch>`）。
-  入口は `/plan`（計画）→ `/impl`（実装〜PR）→ `/merge`（マージ）。複数 Issue を一度に流すときだけ `/parallel`。
-  設計の全体像と共有資源の制約は [docs/worktree-workflow.md](docs/worktree-workflow.md)。
-
-## スキルとエージェント
-
-- スキル `podcast-neta`（`.claude/skills/podcast-neta/`）
-  - X アーカイブと Evernote から Podcast ネタを発掘し、`podcast-ideas/YYYY-MM-DD.md` に提案を書き出す。
-  - 前処理スクリプト: `scripts/extract_tweets.py`（構造ノイズを機械的に除去）
-  - 選別基準: `references/selection-criteria.md`
-- スキル `tweet-draft`（`.claude/skills/tweet-draft/`）
-  - X アーカイブと Evernote から、価値観・人格が伝わる「有益なツイート」の下書きを生成し、`tweet-drafts/YYYY-MM-DD.md` に書き出す。**承認制**（下書き提案 → オーナーが承認 → 投稿）で、`post_tweet` を呼ぶのは承認後だけ。完全自動投稿はしない。
-  - ネタ発掘は `podcast-neta` の資産（`extract_tweets.py` / `podcast-idea-miner` / `selection-criteria.md`）を流用。整形の物差しは `references/tweet-criteria.md`。
-- スキル `note-draft`（`.claude/skills/note-draft/`）
-  - X アーカイブと Evernote から、note.com にそのまま貼れる「Podcast の下敷きを兼ねた記事」の下書きを生成し、`note-drafts/YYYY-MM-DD.md` に書き出す。**note を書くこと自体が Podcast のひとり語りの骨組みになる**形を狙う（逐語台本は作らない／記事で全部言い切らず深掘りは Podcast に残す）。note には投稿 API が無い前提で、成果物は「貼るだけ」のファイルまで用意する（自動投稿はしない）。
-  - ネタ発掘は `podcast-neta` の資産を流用。整形の物差しは `references/note-criteria.md`。
-- スキル `books`（`.claude/skills/books/`）
-  - オーナーが過去に読んできた本（Evernote「読みたい本/読んできた本」の全56冊）を「判断軸のライブラリ」として持つ読書外部脳。人生・仕事・お金・人間関係・健康・時間などの相談時に発火。
-  - 司令塔 `SKILL.md` + タグ索引 `index.md` + 1冊1ファイル `volumes/`（全56冊）。相談時は索引でタグを**意味的に**照合し、関連**上位3〜5冊だけ**をロードする（全冊は読まない）。
-  - 各冊は概要／主張／原則に加え「**限界・反論**」欄を持ち、本を権威化せず、本人の経験・現状と**統合**して回答する。中身は一般公開の書評・要約を裏取りし出典URL付き。
-  - 本を1冊足すときは `volumes/` に1ファイル作り、`index.md` に1行足す（1ファイル1冊）。
-- スキル `postmortem`（`.claude/skills/postmortem/`）
-  - Evernote の失敗振り返りノート（ボイスメモの文字起こし＋空のポストモーテム欄）を読み、`1. ケース`〜`9. 付録` を埋めて**ノートを直接更新**する。共有URLの末尾GUIDがそのまま noteId。
-  - 原因分析では固有の3レンズ（**3つ以上同時にやってなかったか / 失敗種別は ADHD か / 心得「自分を信用するな」の何に違反したか**）を必ず当てる。材料が無いレンズは埋めずに「要確認」と書く（捏造しない）。
-  - 再発防止策は**意志ではなく環境を変える**形にする。「気をつける」は対策として無効。物差しは `references/postmortem-criteria.md`。
-  - ノート下部の「書き方例」には同じ見出しがサンプル入りで存在するので触らない。`edit_note` は `--en-nodeId` 付きの見出しを含めた **1回の `replace`** でまとめて差し替える。
-- 開発フローのスキル（BeerSalon から移植。詳細は [docs/worktree-workflow.md](docs/worktree-workflow.md)）
-  - `/plan <Issue>` … Issue から実装計画を表形式で出す。実装も Git 操作もしない。
-  - `/impl <Issue>` … `main` 起点で worktree を作り、実装 → 検証 → コミット → PR → worktree 撤去まで。**司令塔自身が実行する**（分岐でオーナーに聞ける場所に居続けるため）。`--no-worktree` で従来のブランチ方式に切り替えられる。
-  - `/parallel <Issue...>` … 複数 Issue を `external-brain-engineer` サブエージェントで同時に流す薄い司令塔。**アーカイブ・生成物を書き換えるタスクと MCP への書き込みは並列に流さない**（全 worktree でリンク共有されているため）。
-  - `/merge <PR>` … Merge commit でマージし、ブランチ削除と司令塔 `main` の最新化まで。マージの可否は必ずオーナーが決める。
-- サブエージェント `podcast-idea-miner`（`.claude/agents/podcast-idea-miner.md`）
-  - 候補ツイートの指定範囲、または Evernote を走査し、ポエム/哲学系の言葉だけを構造化 JSON で返す発掘専用。
-- サブエージェント `external-brain-engineer`（`.claude/agents/external-brain-engineer.md`）
-  - `/impl`・`/parallel` の実装担当。worktree 内で実装し、実際に走らせて件数を実測してから報告する。外部サービスへは書き込まない。
+- **`main` に直接コミットしない。** `feature/<issue番号>-<スラッグ>` を切り PR 経由でマージ。
+- **実装は worktree、司令塔（`main`）は clean に保つ。** 1タスク = 1 worktree。
+  `/plan`（計画）→ `/impl`（実装〜PR）→ `/merge`。複数 Issue のときだけ `/parallel`。
+- **アーカイブ・生成物の書き換えと MCP 書き込みは並列に流さない**（worktree 間でリンク共有）。
+- スキル / サブエージェントは `.claude/skills/` `.claude/agents/`。説明は自動ロードされる。
 
 ## オーナーの人物像（外部脳から合成した理解）
 
