@@ -10,6 +10,8 @@ link chatgpt-archive
 link evernote-archive
 link line-archive
 link calendar-archive
+link claude-log-archive
+link kindle-archive
 
 # 出力ディレクトリ（worktree 撤去で生成物が消えないよう、本体側へ書かせる）
 link podcast-ideas

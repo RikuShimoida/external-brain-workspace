@@ -23,6 +23,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | LINE トーク履歴 | `line-archive/`（7ルーム 約21,933件の地図 `talk_map.tsv` ＋ 濃い日だけ抜き出した `deep/` 39件） | ローカルファイルを直接パース（**MCP では取れない**） |
 | Claude Code 過去ログ | `claude-log-archive/`（144セッションの地図 `session_map.tsv` ＋ 濃いセッションだけ抜き出した `deep/` 35件） | 元ログ `~/.claude/projects/` を読んで抽出（**リポジトリ外・30日で自動削除**） |
 | Gmail | 送信済み **1,213通 / 602スレッド**（2017年12月〜。受信箱は 166,476通あるがノイズが大半） | Gmail MCP（`list_labels` / `search_threads` / `get_message`。**読み取り専用で使う**。ローカルに落とさない） |
+| Kindle ハイライト | `kindle-archive/`（**35冊 766件・約6.0万字**の地図 `book_map.tsv` ＋ 1冊1ファイルの `books/`。本棚43冊中、線を引いていたのが35冊） | ブラウザで `read.amazon.co.jp/notebook` から吸い出して直接パース（**API も MCP も無い**。手順は `docs/kindle-export.md`） |
 
 **重要:** 過去ツイートの網羅的な分析は Twitter MCP ではなくローカルアーカイブを使う。
 MCP の `search_tweets` は直近しか取れないため。
@@ -83,6 +84,33 @@ X / Evernote / ChatGPT が「自分の内側の言葉」なのに対し、Gmail 
 Podcast / note / ツイートの素材にするときは LINE よりさらに厳しく扱う。
 相手の氏名・メールアドレス・社名・案件の条件は、そのまま成果物に出さないこと。
 
+Kindle は LINE と同じ「API が無いので手動エクスポート一択」型。`read.amazon.co.jp/notebook` を
+ログイン済みのブラウザで開き、`docs/kindle-export.md` の JS スニペットを DevTools に貼って
+`kindle-archive/highlights.json` を落とす。そこから `scripts/kindle_map.py` で「地図」
+（1冊ぶんのハイライト数・メモ数・最長字数）を作り、`scripts/kindle_extract.py` で
+1冊1 Markdown に展開する。`scripts/kindle_match.py` が `books` スキルの56冊と書名で突き合わせる。
+
+**重要: Kindle の35冊と `books` の56冊はほぼ別集合。** 実際に突き合わせたところ重なりは
+**4冊だけ**（Podcast のつくり方 / 小さく分けて考える / ひろゆきのシン・未来予測 / イシューからはじめよ）で、
+残り **31冊・629件（全体の82%）は index.md の外**にある。Kindle は技術書・実用書が中心で、
+Evernote の「読んできた本」は人生・仕事寄りという偏りの違い。
+そのため `books` スキルは、index.md に当たりが無いとき `kindle-archive/book_map.tsv` も見に行く。
+
+**重要:** 他ソースと違い、ここでは濃さの閾値で間引かない。ハイライトは
+**オーナーが読みながら既に選び終えた文**であり、こちらでさらに選別すると本人の選択を上書きしてしまう。
+
+**重要:** Kindle for Mac のローカル DB（`AnnotationStorage`）は使えない。実際に開いて確認したところ
+全32行のうち `highlight` は1件だけで、しかもハイライト本文が空だった（2026-08-26 実測）。
+`My Clippings.txt` も実機で読んだ本しか入らず、この Mac には存在しない。notebook 一択。
+
+**重要: このリポジトリは公開されている。** ハイライトは書籍本文の逐語引用なので、
+`kindle-archive/`（`.gitignore` 済み）の外に出さない。`books` スキルの `volumes/*.md` は
+Git 管理下なので、**そこにはハイライト本文を書かず、ポインタ1行だけを置く**。
+Podcast / note / ツイートで使うときは引用の範囲（主従関係・出典明記）に注意する。
+
+X / Evernote が「自分の言葉」なのに対し、Kindle は**他人の言葉に自分が反応した点**の記録。
+`books` の56冊が「本が何を言ったか」なら、こちらは「**本人の琴線がどこで鳴ったか**」にあたる。
+
 Evernote は「クラウドに置いたまま」が原則。ローカルに本文を落とさない
 （ディスクを圧迫せず、エクスポート作業なしで常に最新が読めるため）。
 そのうえで、**取りこぼしを減らすために2つの入口を必ず両方使う**。
@@ -102,7 +130,7 @@ Evernote は「クラウドに置いたまま」が原則。ローカルに本�
 更新は `updated:day-N` で差分だけ取り直せばよく、オーナーの手作業は不要。
 全件の作り直しは重いので**サブエージェントに隔離**する。
 
-`twitter-archive/` `chatgpt-archive/` `evernote-archive/` `line-archive/` `claude-log-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
+`twitter-archive/` `chatgpt-archive/` `evernote-archive/` `line-archive/` `claude-log-archive/` `kindle-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
 
 ## 進め方の原則
 
@@ -137,6 +165,7 @@ BeerSalon から横展開した開発ルール。作業時は必ず従うこと�
   - 司令塔 `SKILL.md` + タグ索引 `index.md` + 1冊1ファイル `volumes/`（全56冊）。相談時は索引でタグを**意味的に**照合し、関連**上位3〜5冊だけ**をロードする（全冊は読まない）。
   - 各冊は概要／主張／原則に加え「**限界・反論**」欄を持ち、本を権威化せず、本人の経験・現状と**統合**して回答する。中身は一般公開の書評・要約を裏取りし出典URL付き。
   - 本を1冊足すときは `volumes/` に1ファイル作り、`index.md` に1行足す（1ファイル1冊）。
+  - **Kindle ハイライトと連動する。** `kindle-archive/books/` に「本人が線を引いた箇所」があれば、その巻をロードするとき一緒に読む。要約が「本が何を言ったか」、ハイライトが「**本人が何に反応したか**」。逐語は公開リポジトリに置けないので `volumes/` 側にはポインタだけ持つ。
 - スキル `postmortem`（`.claude/skills/postmortem/`）
   - Evernote の失敗振り返りノート（ボイスメモの文字起こし＋空のポストモーテム欄）を読み、`1. ケース`〜`9. 付録` を埋めて**ノートを直接更新**する。共有URLの末尾GUIDがそのまま noteId。
   - 原因分析では固有の3レンズ（**3つ以上同時にやってなかったか / 失敗種別は ADHD か / 心得「自分を信用するな」の何に違反したか**）を必ず当てる。材料が無いレンズは埋めずに「要確認」と書く（捏造しない）。
