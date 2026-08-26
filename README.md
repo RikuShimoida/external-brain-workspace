@@ -80,4 +80,4 @@ claude.ai のコネクタ設定を開き、Gmail を認可します。Claude Cod
 
 ### 3. 動作確認
 
-`list_labels` を呼んで `SENT` の件数が返れば接続できています。読み取り3種（`list_labels` / `search_threads` / `get_message`）だけを使い、送信・削除・ラベル変更などの書き込み系ツールは使いません（`CLAUDE.md` のデータソース節を参照）。
+`list_labels` を呼んで `SENT` の件数が返れば接続できています。読み取り3種（`list_labels` / `search_threads` / `get_message`）だけを使い、送信・削除・ラベル変更などの書き込み系ツールは使いません（詳細は [docs/data-sources.md](docs/data-sources.md)）。

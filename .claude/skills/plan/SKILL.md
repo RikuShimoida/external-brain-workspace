@@ -19,7 +19,8 @@ git の状態確認（`git status` / `git log` 等）も不要。
 1. **最初に必ず** `gh issue view $ARGUMENTS` を実行して Issue 内容を取得する。取得前に他の作業をしてはならない。
 2. Issue を読み、対象（スクリプト / スキル / エージェント / ドキュメント / データソース）と期待動作を把握する。
 3. 設計ドキュメントと照合し、影響範囲を特定する。
-   - `CLAUDE.md`（データソース表・進め方の原則・スキル一覧・オーナーの人物像）
+   - `CLAUDE.md`（データソース表・厳守事項・進め方の原則・オーナーの人物像）
+   - `docs/data-sources.md`（データソースの詳細に触れる変更の場合）
    - `docs/worktree-workflow.md`（開発フローに触る変更の場合）
    - `.claude/rules/`（git-workflow / command-rules）
    - 対象スキルの `SKILL.md` と `references/`
