@@ -1,0 +1,23 @@
+# /impl・/parallel が main 起点で worktree を作るとき、Git 管理外でチェックアウトに
+# 含まれないものを新 worktree へ引き継ぐ対象の定義。
+# これは git / Claude Code の標準機能ではなく、このリポジトリ独自の取り決めにすぎない。
+# 実際のリンク/コピーはスキルの手続きとしてエージェントが行う（docs/worktree-workflow.md §3）。
+
+# --- シンボリックリンク（実体をコピーしない。合計約1GBあるため） ---
+# 入力アーカイブ
+link twitter-archive
+link chatgpt-archive
+link evernote-archive
+link line-archive
+link calendar-archive
+
+# 出力ディレクトリ（worktree 撤去で生成物が消えないよう、本体側へ書かせる）
+link podcast-ideas
+link tweet-drafts
+link note-drafts
+link decisions
+link analysis
+
+# --- コピー（小さく、worktree 側で独立していてよいもの） ---
+copy .env
+copy .claude/settings.local.json

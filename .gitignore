@@ -8,34 +8,44 @@
 # Claude Code のローカル設定
 .claude/settings.local.json
 
+# --- 個人データ・生成物（Git 管理外） ---
+# 末尾スラッシュを付けないこと。worktree ではこれらがシンボリックリンクとして張られ、
+# `foo/` 形式だとディレクトリにしかマッチせず、リンクが untracked のまま残るため。
+
 # Twitter/X のデータアーカイブ（個人データ）
-twitter-archive/
+twitter-archive
 
 # ChatGPT のデータアーカイブ（人生相談などの個人データ）
-chatgpt-archive/
+chatgpt-archive
 
 # Podcast ネタ発掘の成果物・中間生成物（過去投稿からの個人的な引用を含む）
-podcast-ideas/
+podcast-ideas
 
 # ツイート下書きの成果物・中間生成物（過去投稿からの個人的な引用を含む）
-tweet-drafts/
+tweet-drafts
 
 # note 下書きの成果物・中間生成物（過去投稿からの個人的な引用を含む）
-note-drafts/
+note-drafts
 
 # 意思決定アドバイザー（/decide）の判断ログ（個人的判断を含む）
-decisions/
+decisions
 
 .vscode/
 
 # Evernote のノート地図（タイトル等のメタデータ。本文は含まないが個人データ）
-evernote-archive/
+evernote-archive
 
 # 成長分析などの分析結果（過去投稿・ノートからの個人的な引用を含む）
-analysis/
+analysis
 
 # LINE のトーク履歴（本人と相手の個人データ）
-line-archive/
+line-archive
+
+# Google カレンダーの取得結果（個人データ）
+calendar-archive
 
 # Python のキャッシュ
 __pycache__/
+
+# Claude Code の worktree（/impl・/parallel が main 起点で作る作業ツリー。司令塔のチェックアウトに含めない）
+.claude/worktrees/
