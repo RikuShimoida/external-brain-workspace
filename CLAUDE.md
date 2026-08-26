@@ -21,6 +21,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | ChatGPT 過去会話 | `chatgpt-archive/`（全会話の索引 `conversation_map.tsv` 約4,540件 ＋ 人生相談だけ抜き出した `lifetalk/` 60件） | ローカルファイルを直接パース |
 | Google カレンダー | 予定そのもの | Google Calendar MCP（`list_events` / `search_events` / `create_event` など。予定の確認と登録に使う。**書き込む前に必ず内容を確認する**） |
 | LINE トーク履歴 | `line-archive/`（7ルーム 約21,933件の地図 `talk_map.tsv` ＋ 濃い日だけ抜き出した `deep/` 39件） | ローカルファイルを直接パース（**MCP では取れない**） |
+| Claude Code 過去ログ | `claude-log-archive/`（144セッションの地図 `session_map.tsv` ＋ 濃いセッションだけ抜き出した `deep/` 35件） | 元ログ `~/.claude/projects/` を読んで抽出（**リポジトリ外・30日で自動削除**） |
 
 **重要:** 過去ツイートの網羅的な分析は Twitter MCP ではなくローカルアーカイブを使う。
 MCP の `search_tweets` は直近しか取れないため。
@@ -33,6 +34,19 @@ LINE も同じ2段構え。`scripts/line_map.py` で「地図」（1日ぶんの
 `scripts/line_extract.py` でその日の最長メッセージが 300 字を超える日だけ本文を Markdown 化する。
 合計文字数ではなく**最長メッセージ**で選ぶのは、長文が数件の日（仕組みの設計・相談）と
 短文が大量に飛び交う日（友人との雑談）を分けるため。パースは `scripts/line_parse.py` に集約。
+
+Claude Code の会話ログも同じ2段構え。`scripts/claude_log_map.py` で「地図」（セッションごとの
+タイトル・発言数・最長発言の一覧）を作り、`scripts/claude_log_extract.py` で最長発言が
+100 字を超えるセッションだけ本文を Markdown 化する。パースは `scripts/claude_log_parse.py` に集約。
+
+X / Evernote が「言葉の蓄積」なら、これは**手を動かしながらの思考**（なぜこう作ったか、どこで迷ったか）。
+ただし元ログ 212MB のうち本人の発言は **913件・約8.1万字**（抽出物にして 260KB＝元の 0.1%）しかなく、
+残りはツール出力と運用系レコードなので、
+`type: "user"` でも `tool_result` / `isSidechain` / `isMeta` のものは必ず弾く。
+
+**重要:** 元ログは `~/.claude/projects/` にあり、`cleanupPeriodDays` の既定 **30日で自動削除される**。
+参照方式では古いログが消えるため、抽出物をこちら側に持つ。取りこぼさないよう定期的に走らせること。
+スクリプトは元ログを**読むだけ**で、書き換えも削除もしない。
 
 Evernote が「整理された結果」なのに対し、LINE には**家族に相談しながら仕組みを作っていく過程**が残る。
 ただし**相手の発言が必ず含まれる**ので、Podcast / note / ツイートの素材にするときは
@@ -60,7 +74,7 @@ Evernote は「クラウドに置いたまま」が原則。ローカルに本�
 更新は `updated:day-N` で差分だけ取り直せばよく、オーナーの手作業は不要。
 全件の作り直しは重いので**サブエージェントに隔離**する。
 
-`twitter-archive/` `chatgpt-archive/` `evernote-archive/` `line-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
+`twitter-archive/` `chatgpt-archive/` `evernote-archive/` `line-archive/` `claude-log-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
 
 ## 進め方の原則
 
