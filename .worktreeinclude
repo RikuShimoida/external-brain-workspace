@@ -20,6 +20,7 @@ link tweet-drafts
 link note-drafts
 link decisions
 link analysis
+link outputs-archive
 
 # --- コピー（小さく、worktree 側で独立していてよいもの） ---
 copy .env

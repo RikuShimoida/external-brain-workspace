@@ -24,6 +24,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | Claude Code 過去ログ | `claude-log-archive/`（136セッションの地図 `session_map.tsv` ＋ `deep/` 40件） | 元ログ `~/.claude/projects/` から抽出（**リポジトリ外・消えるので自動で取り込む**） |
 | Gmail | 送信済み **1,213通 / 602スレッド**（2017年12月〜。受信箱 166,476通はノイズが大半） | Gmail MCP（`list_labels` / `search_threads` / `get_message`。**読み取り専用**） |
 | Kindle ハイライト | `kindle-archive/`（**35冊 766件**の地図 `book_map.tsv` ＋ 1冊1ファイルの `books/`） | ブラウザで `read.amazon.co.jp/notebook` から吸い出して直接パース（**API も MCP も無い**） |
+| **自分の生成物** | `outputs-archive/output_map.tsv`（過去の提案・下書き・判断ログ **63件**の既出インデックス） | `scripts/output_map.py` で毎回作り直す（**提案の前に必ず引く**） |
 
 2段構えの設計・スクリプトの使い分け・件数の根拠は [docs/data-sources.md](docs/data-sources.md)。
 **アーカイブを扱う前に必ず Read すること。**
@@ -36,6 +37,10 @@ Podcast のネタとして再利用することに価値を置いている。
 - **LINE / Gmail は第三者の情報を含む。** 氏名・社名・連絡先を成果物に出さない。
 - **Claude Code の元ログは放っておくと消える。** 取り込みは `SessionStart` フックが自動で回す
   （`scripts/claude_log_sync.py`）。保持期間は365日に延長済み。手で叩くなら `--force`。
+- **ネタを提案する前に必ず既出をチェックする。** `python3 scripts/output_map.py` を回し、
+  過去に同じネタを出していないか確かめる（`--match "<引用>"` で個別照会）。
+  **投稿済み（`status: posted`）は除外**、それ以外の既出は**除外せず別角度で**出す。
+  `/decide` は採点前に過去の判断ログを読み、**前と逆の推奨を黙って出さない**。
 - **Kindle ハイライトは書籍本文の逐語引用。** `kindle-archive/` の外に出さない。
   `books` の `volumes/*.md` は Git 管理下なので、本文を書かずポインタだけ置く。
 - `*-archive/` は個人データ。Git 管理外。

@@ -50,6 +50,9 @@ claude-log-archive
 # Kindle のハイライト（書籍本文の逐語引用。公開リポジトリに載せない）
 kindle-archive
 
+# 既出ネタの地図（過去の生成物から作る索引。引用本文を含む）
+outputs-archive
+
 # Python のキャッシュ
 __pycache__/
 
