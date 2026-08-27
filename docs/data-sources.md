@@ -221,15 +221,21 @@ Podcast / note / ツイートの素材にするときは LINE よりさらに厳
 LINE と同じ「API が無いので手動エクスポート一択」型。`read.amazon.co.jp/notebook` を
 ログイン済みのブラウザで開き、[kindle-export.md](kindle-export.md) の JS を DevTools に貼って
 `highlights.json` を落とす。以降は `scripts/kindle_map.py`（地図）→
-`scripts/kindle_extract.py`（1冊1 Markdown）→ `scripts/kindle_match.py`（`books` の56冊と突き合わせ）。
+`scripts/kindle_extract.py`（1冊1 Markdown）→ `scripts/kindle_match.py`（`books` の索引と突き合わせ）。
 
 **重要: ここでは濃さの閾値で間引かない。** 他ソースと違い、ハイライトは
 **オーナーが読みながら既に選び終えた文**であり、こちらでさらに選別すると本人の選択を上書きしてしまう。
 
-**重要: Kindle の35冊と `books` の56冊はほぼ別集合。** 重なりは **4冊だけ**で、
-残り **31冊・629件（全体の82%）は `books/index.md` の外**にある。
-Kindle は技術書・実用書、Evernote の「読んできた本」は人生・仕事寄りという偏りの違い。
-そのため `books` スキルは、索引に当たりが無いとき `kindle-archive/book_map.tsv` も見に行く。
+**Kindle の35冊と Evernote 由来の56冊はもともとほぼ別集合だった。** 重なりは **4冊だけ**で、
+残り31冊・629件（全体の82%）が `books/index.md` の外にあった。
+Kindle は技術書・実用書、Evernote の「読んできた本」は人生・仕事寄りという偏りの違いによる。
+
+**Issue #35（2026-08-27）で、索引に載せる価値のある7冊を `volumes/` に起こした。**
+選定は3段フィルタ（①`books` の趣旨に合うか → ②ハイライト25件以上か → ③既存索引でタグが手薄か）で、
+件数の閾値だけでは決めていない。索引は相談のたび毎回ロードされる固定費なので、増やしすぎると発火精度が落ちる。
+結果、`books` は63冊になり、突き合わせは **11冊 568件（74%）が索引内 / 24冊 198件が外**（`kindle_match.py` 実測）。
+外に残した24冊は技術書・資格試験本（Clean Architecture / AWS認定 等）や数件しかハイライトが無い本が中心。
+**捨てたわけではなく**、`books` スキルは索引に当たりが無いとき `kindle-archive/book_map.tsv` も見に行く。
 
 **重要: このリポジトリは公開されている。** ハイライトは書籍本文の逐語引用なので
 `kindle-archive/`（`.gitignore` 済み）の外に出さない。`books` の `volumes/*.md` は Git 管理下なので、
@@ -240,7 +246,7 @@ Kindle for Mac のローカル DB（`AnnotationStorage`）は使えない。実�
 実機で読んだ本しか入らず、この Mac には無い。notebook 一択。
 
 X / Evernote が「自分の言葉」なのに対し、Kindle は**他人の言葉に自分が反応した点**の記録。
-`books` の56冊が「本が何を言ったか」なら、こちらは「**本人の琴線がどこで鳴ったか**」にあたる。
+`books` の `volumes/*.md` が「本が何を言ったか」なら、こちらは「**本人の琴線がどこで鳴ったか**」にあたる。
 
 ## Google カレンダー
 
