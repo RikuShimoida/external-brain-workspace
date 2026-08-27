@@ -1,7 +1,8 @@
 # /impl・/parallel が main 起点で worktree を作るとき、Git 管理外でチェックアウトに
 # 含まれないものを新 worktree へ引き継ぐ対象の定義。
 # これは git / Claude Code の標準機能ではなく、このリポジトリ独自の取り決めにすぎない。
-# 実際のリンク/コピーはスキルの手続きとしてエージェントが行う（docs/worktree-workflow.md §3）。
+# 実際のリンク/コピーは scripts/worktree_init.sh が読み取って行う（docs/worktree-workflow.md §3）。
+# ここが唯一の定義。1行足すだけで対象が増える（他のファイルを書き換える必要はない）。
 
 # --- シンボリックリンク（実体をコピーしない。合計約1GBあるため） ---
 # 入力アーカイブ
