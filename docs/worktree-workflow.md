@@ -39,7 +39,7 @@ worktree は作業ディレクトリのファイルを分離するが、**以下
 
 | 共有されるもの | 実体 | 影響 |
 |---|---|---|
-| アーカイブ（入力） | `twitter-archive/` `chatgpt-archive/` `evernote-archive/` `line-archive/` `calendar-archive/` `claude-log-archive/` | Git 管理外。§3 でシンボリックリンクを張るため、**全 worktree が同じ実体を見る** |
+| アーカイブ（入力） | `twitter-archive/` `chatgpt-archive/` `evernote-archive/` `line-archive/` `calendar-archive/` `claude-log-archive/` `kindle-archive/` | Git 管理外。§3 でシンボリックリンクを張るため、**全 worktree が同じ実体を見る** |
 | 生成物（出力） | `podcast-ideas/` `tweet-drafts/` `note-drafts/` `decisions/` `analysis/` | 同上。worktree 撤去で生成物を失わないよう、あえて本体側へ書かせている |
 | MCP | Evernote / Twitter / Google Calendar | レート制限があり、外部サービスへの書き込みは取り消せない |
 
@@ -112,7 +112,8 @@ git / Claude Code のネイティブ機能では自動化されないため、wo
 ```bash
 W=.claude/worktrees/<branch>
 # 入力アーカイブ・出力ディレクトリは実体をコピーせずリンクする
-for d in twitter-archive chatgpt-archive evernote-archive line-archive calendar-archive claude-log-archive \
+for d in twitter-archive chatgpt-archive evernote-archive line-archive calendar-archive \
+         claude-log-archive kindle-archive \
          podcast-ideas tweet-drafts note-drafts decisions analysis; do
   [ -e "$d" ] && ln -s "$(pwd)/$d" "$W/$d"
 done
