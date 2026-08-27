@@ -68,6 +68,7 @@ CLAUDE.md の「勝手に突き進まない。分岐は逐一オーナーに確�
 ```bash
 W=.claude/worktrees/<このタスクの worktree>
 for d in twitter-archive chatgpt-archive evernote-archive line-archive calendar-archive \
+         claude-log-archive kindle-archive \
          podcast-ideas tweet-drafts note-drafts decisions analysis; do
   [ -e "$d" ] && ln -s "$(pwd)/$d" "$W/$d"
 done
