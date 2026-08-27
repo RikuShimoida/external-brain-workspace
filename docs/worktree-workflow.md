@@ -39,8 +39,8 @@ worktree は作業ディレクトリのファイルを分離するが、**以下
 
 | 共有されるもの | 実体 | 影響 |
 |---|---|---|
-| アーカイブ（入力） | `twitter-archive/` `chatgpt-archive/` `evernote-archive/` `line-archive/` `calendar-archive/` `claude-log-archive/` `kindle-archive/` | Git 管理外。§3 でシンボリックリンクを張るため、**全 worktree が同じ実体を見る** |
-| 生成物（出力） | `podcast-ideas/` `tweet-drafts/` `note-drafts/` `decisions/` `analysis/` | 同上。worktree 撤去で生成物を失わないよう、あえて本体側へ書かせている |
+| アーカイブ（入力） | `.worktreeinclude` の `link` 行（`*-archive`） | Git 管理外。§3 でシンボリックリンクを張るため、**全 worktree が同じ実体を見る** |
+| 生成物（出力） | `.worktreeinclude` の `link` 行（出力ディレクトリ） | 同上。worktree 撤去で生成物を失わないよう、あえて本体側へ書かせている |
 | MCP | Evernote / Twitter / Google Calendar | レート制限があり、外部サービスへの書き込みは取り消せない |
 
 → 「常時 worktree 化」が解決するのは *Git 管理下のファイルの分離* であって *データと外部サービスの分離* ではない。
@@ -107,21 +107,36 @@ git worktree add .claude/worktrees/<branch> origin/main -b <branch>
 ### worktree の初期化（スキルの手続きとして明示的に実行）
 
 git / Claude Code のネイティブ機能では自動化されないため、worktree 作成直後に必ず行う。
-対象の定義は `.worktreeinclude`（このリポジトリ独自の取り決め。標準機能ではない）。
+**司令塔のリポジトリルートで**次を実行する。
 
 ```bash
-W=.claude/worktrees/<branch>
-# 入力アーカイブ・出力ディレクトリは実体をコピーせずリンクする
-for d in twitter-archive chatgpt-archive evernote-archive line-archive calendar-archive \
-         claude-log-archive kindle-archive \
-         podcast-ideas tweet-drafts note-drafts decisions analysis; do
-  [ -e "$d" ] && ln -s "$(pwd)/$d" "$W/$d"
-done
-# 小さいものはコピー
-[ -f .env ] && cp .env "$W/.env"
-[ -f .claude/settings.local.json ] && cp .claude/settings.local.json "$W/.claude/settings.local.json"
+scripts/worktree_init.sh .claude/worktrees/<branch>
 ```
 
+#### 対象の定義は `.worktreeinclude` ただ1つ
+
+`scripts/worktree_init.sh` は `.worktreeinclude` を読むだけで、対象名を一切持たない。
+`link` 行は実体をコピーせずシンボリックリンクを張り、`copy` 行は複製する。
+**アーカイブや出力ディレクトリを増やすときに書き換えるのは `.worktreeinclude` と `.gitignore` の2つだけ**で、
+このドキュメントもスキルも触らなくてよい。
+
+> **なぜこの形か。** 以前はここと `.claude/skills/impl/SKILL.md` に同じ `for d in ...` が
+> べた書きで複製されており、対象を足すたびに3箇所へ手で同期する必要があった。
+> 実際に `claude-log-archive` と `kindle-archive` を2回続けて取りこぼしている（Issue #31 / #39）。
+> **ドキュメントと定義は直るのに、実際に走るコマンドが置き去りになる**のが再発パターンだった。
+> だからここには**対象一覧もループ本体も書かない**。書いた時点で重複が復活する。
+
+補助モード:
+
+| コマンド | 用途 |
+|---|---|
+| `scripts/worktree_init.sh --dry-run <path>` | 実行せず対象を列挙する |
+| `scripts/worktree_init.sh --check` | `link` 行が `.gitignore` に入っているかを `git check-ignore` で検証する |
+
+`--check` は個人データ混入の予防線。`.worktreeinclude` に足して `.gitignore` に足し忘れると、
+worktree で張ったリンクが untracked のまま残り、誤ってコミットしうる。
+
+- 再実行しても安全（既にあるものはスキップする）。
 - **なぜコピーではなくリンクか**: アーカイブは合計で約1GB ある。タスクごとに複製すると
   ディスクも時間も無駄で、しかも本体側の更新が worktree に反映されない。
   出力ディレクトリをリンクするのは、**worktree を撤去しても生成物（ネタ・下書き・判断ログ）が消えないため**。
@@ -178,6 +193,10 @@ BeerSalon と違い、**検品台（共有DB）が無いぶん直列キューは
 - worktree に出力ディレクトリをリンクせず、生成物ごと `git worktree remove` で消す
 - **worktree 内で `rm -rf <リンク名>/` を打つ**（リンク先の実体、つまり本体のアーカイブが消える）
 - `.gitignore` に末尾スラッシュ付きでデータディレクトリを書く（リンクが無視されなくなる）
+- **リンク対象の一覧やループ本体を、スキル・ドキュメントへ書き写す**（定義は `.worktreeinclude` ただ1つ。
+  複製した瞬間に「定義は直ったが実際に走るコマンドが古い」という取りこぼしが復活する）
+- アーカイブを足したのに `.worktreeinclude` か `.gitignore` の片方だけ更新する
+  （`scripts/worktree_init.sh --check` で検出できる）
 - 司令塔（`main`）で実装を始めてしまい、`git status` を汚す
 
 ---
@@ -192,4 +211,5 @@ BeerSalon と違い、**検品台（共有DB）が無いぶん直列キューは
 | `/merge` | 新規。マージ + ブランチ削除 + 司令塔 `main` の最新化 |
 | `external-brain-engineer` エージェント | 新規。`/impl` `/parallel` の実装担当 |
 | 既存スキル（podcast-neta / tweet-draft / note-draft / books / decide / postmortem） | 変更なし。これらは「外部脳を使う」スキルであり、開発フローとは層が違う |
+| `scripts/worktree_init.sh` | 新規。`.worktreeinclude` を読んで worktree を初期化する唯一の実行体（Issue #39） |
 | `.gitignore` | `.claude/worktrees/` を追加 |

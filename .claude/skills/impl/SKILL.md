@@ -63,19 +63,16 @@ CLAUDE.md の「勝手に突き進まない。分岐は逐一オーナーに確�
 ##### worktree の初期化（必ず実行する）
 
 アーカイブと生成物は Git 管理外なので、worktree にはそのままでは存在しない。
-対象の定義は `.worktreeinclude`（このリポジトリ独自の取り決め。git の標準機能ではない）。
+**司令塔のリポジトリルートで**次を実行する。
 
 ```bash
-W=.claude/worktrees/<このタスクの worktree>
-for d in twitter-archive chatgpt-archive evernote-archive line-archive calendar-archive \
-         claude-log-archive kindle-archive \
-         podcast-ideas tweet-drafts note-drafts decisions analysis; do
-  [ -e "$d" ] && ln -s "$(pwd)/$d" "$W/$d"
-done
-[ -f .env ] && cp .env "$W/.env"
-[ -f .claude/settings.local.json ] && cp .claude/settings.local.json "$W/.claude/settings.local.json"
+scripts/worktree_init.sh .claude/worktrees/<このタスクの worktree>
 ```
 
+- 対象の定義は `.worktreeinclude` ただ1つ（このリポジトリ独自の取り決め。git の標準機能ではない）。
+  **ここに対象名を書き写さないこと。** 書き写すと定義とのズレが再発する（Issue #39）。
+- 実行後、`リンク 12本 / コピー 2本` のような集計が出る。**リンク数が0本ならおかしい**ので、
+  司令塔のルートで実行したかを確認する。
 - **リンクであってコピーではない**（アーカイブは合計約1GB）。生成物ディレクトリもリンクなので、
   worktree を撤去しても出力は本体側に残る。
 - **worktree 内で `rm -rf <リンク名>/` を打ってはならない。** リンク先の実体（本体のアーカイブ）が消える。
@@ -104,8 +101,9 @@ git switch -c <prefix>/$ARGUMENTS-<スラッグ>
 - Issue の要件に基づいて実装する。
 - **CLAUDE.md の原則を守る**。特に「ネタや引用を捏造しない」。
   引用は必ず実在する投稿・ノートに紐づけ、読んでいないものを読んだことにしない。
-- 個人データを Git に混入させない。新しいアーカイブ・生成物ディレクトリを作ったら
-  `.gitignore` への追加も同じ PR に含める。
+- 個人データを Git に混入させない。新しいアーカイブ・生成物ディレクトリを作ったら、
+  **`.gitignore`（末尾スラッシュ無し）と `.worktreeinclude` の両方**への追加を同じ PR に含める。
+  追加したら `scripts/worktree_init.sh --check` を走らせ、両者が食い違っていないことを確認する。
 
 #### 1-3. 検証（このリポジトリには UT / E2E / CI が無い）
 
@@ -116,6 +114,7 @@ git switch -c <prefix>/$ARGUMENTS-<スラッグ>
 | `scripts/*.py` | `--dry-run` があれば先に dry-run → 本実行。処理件数・出力ファイル数を実測 |
 | スキル / エージェント定義 | フロントマターが壊れていないこと、参照している相対パスが実在すること（`ls` で確認） |
 | ドキュメント / CLAUDE.md | リンク先が実在すること、書いた件数・パスが現物と一致すること |
+| `.worktreeinclude` / `scripts/worktree_init.sh` | `--check` が NG 0件。`--dry-run` で対象を確認してから本実行し、リンク本数と壊れリンク0本を実測 |
 
 ##### 共有資源の扱い（厳守）
 
