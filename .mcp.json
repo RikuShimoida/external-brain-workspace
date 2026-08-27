@@ -13,6 +13,10 @@
     "evernote": {
       "type": "http",
       "url": "https://mcp.evernote.com/mcp"
+    },
+    "freee": {
+      "type": "http",
+      "url": "https://mcp.freee.co.jp/mcp"
     }
   }
 }

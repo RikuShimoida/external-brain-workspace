@@ -61,6 +61,36 @@ Evernote 公式のリモート MCP サーバー（`https://mcp.evernote.com/mcp`
 
 > 補足: 公式 Evernote MCP はベータ版です。問題があれば Evernote のサポートチケットにメッセージ「MCP」と記載して報告できます。
 
+## freee MCP のセットアップ
+
+freee 公式のリモート MCP サーバー（`https://mcp.freee.co.jp/mcp`）を設定済みです（`.mcp.json`）。
+売上・経費・仕訳・試算表を読み、確定申告の準備や税額シミュレーションに使います。認証は Evernote と同じ
+OAuth なので、freee アプリストアへのアプリ登録もクライアント ID / シークレットの設定も不要です。
+
+### 1. Claude Code で認証
+
+```bash
+./scripts/claude.sh   # または claude
+# 起動後、/mcp → freee → authenticate
+```
+
+ブラウザで freee のサインイン承認画面が開きます。承認すると `connected` になります。
+事業所が複数ある場合は `freee_get_current_company` で現在の事業所を確認し、
+`freee_set_current_company` で切り替えます。
+
+### 2. 動作確認
+
+`/mcp` で `freee` サーバーが接続済み（connected）になっていることを確認してください。
+
+### 3. 読み取り専用で使う（重要）
+
+**freee MCP には仕訳・取引の登録・更新・削除ができる書き込み系ツールが含まれますが、これらは使いません。**
+帳簿を壊すと確定申告に直撃し、税務上の証憑性にも関わります。登録・修正は freee の画面で行ってください
+（詳細は [docs/data-sources.md](docs/data-sources.md)）。
+
+> 補足: 個人事業主プランでは一部のエンドポイントが制限される可能性があります。
+> レート制限は 1事業所あたり 120リクエスト/分です。
+
 ## Gmail（claude.ai コネクタ）のセットアップ
 
 Gmail は Twitter / Evernote と違い、**`.mcp.json` では設定できません**。claude.ai 側のコネクタとして認可します。

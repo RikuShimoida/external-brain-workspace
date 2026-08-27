@@ -41,7 +41,7 @@ worktree は作業ディレクトリのファイルを分離するが、**以下
 |---|---|---|
 | アーカイブ（入力） | `.worktreeinclude` の `link` 行（`*-archive`） | Git 管理外。§3 でシンボリックリンクを張るため、**全 worktree が同じ実体を見る** |
 | 生成物（出力） | `.worktreeinclude` の `link` 行（出力ディレクトリ） | 同上。worktree 撤去で生成物を失わないよう、あえて本体側へ書かせている |
-| MCP | Evernote / Twitter / Google Calendar | レート制限があり、外部サービスへの書き込みは取り消せない |
+| MCP | Evernote / Twitter / Google Calendar / freee | レート制限があり、外部サービスへの書き込みは取り消せない |
 
 → 「常時 worktree 化」が解決するのは *Git 管理下のファイルの分離* であって *データと外部サービスの分離* ではない。
 
