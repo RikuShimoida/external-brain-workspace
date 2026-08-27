@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Kindle のハイライトと books スキルの56冊を書名で突き合わせる。
+"""Kindle のハイライトと books スキルの索引（index.md）を書名で突き合わせる。
 
 どの volumes/*.md に「本人が線を引いた箇所」へのポインタを足せるかを出す。
 書名は Kindle 側（Amazon の商品名）と volumes 側（Evernote 由来）で表記が揺れるので、

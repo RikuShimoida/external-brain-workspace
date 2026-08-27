@@ -149,7 +149,7 @@ mkdir -p kindle-archive && mv ~/Downloads/highlights.json kindle-archive/
 python3 scripts/kindle_map.py                 # 地図 → kindle-archive/book_map.tsv
 python3 scripts/kindle_extract.py --dry-run   # 何冊書くか確認
 python3 scripts/kindle_extract.py             # 本文 → kindle-archive/books/*.md
-python3 scripts/kindle_match.py               # books スキルの56冊と書名で突き合わせ
+python3 scripts/kindle_match.py               # books スキルの索引と書名で突き合わせ
 ```
 
 ---
