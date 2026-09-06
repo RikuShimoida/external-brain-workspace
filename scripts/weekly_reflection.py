@@ -47,8 +47,11 @@ SECTIONS = [
     ("fail_result", "今日、失敗した結果", "失敗結果"),
 ]
 
-# 見出しっぽいタグ（この内側テキストに見出し語が含まれるかで判定する）
-HEADING_RE = re.compile(r"<(h[1-6]|div|p|b|span)\b[^>]*>(.*?)</\1>", re.IGNORECASE | re.DOTALL)
+# 見出しタグ（この内側テキストに見出し語が含まれるかで判定する）。
+# 実ノートの見出しは必ず <h2>/<h3>。配下は <li><div>...</div></li> 構造なので、
+# div/b/span まで見出し候補にすると、見出し直後の <li> 内 <div> を「次の見出し」と
+# 誤検出して配下範囲が潰れ、項目が1つも拾えなくなる。見出しは h1〜h6 に限定する。
+HEADING_RE = re.compile(r"<(h[1-6])\b[^>]*>(.*?)</\1>", re.IGNORECASE | re.DOTALL)
 LI_RE = re.compile(r"<li\b[^>]*>(.*?)</li>", re.IGNORECASE | re.DOTALL)
 TAG_RE = re.compile(r"<[^>]+>")
 HR_RE = re.compile(r"<hr\b[^>]*/?>", re.IGNORECASE)
