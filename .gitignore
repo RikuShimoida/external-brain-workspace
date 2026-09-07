@@ -44,6 +44,9 @@ line-archive
 # Facebook Messenger のトーク履歴（本人と相手の個人データ）
 messenger-archive
 
+# Instagram のアクティビティ（本人の投稿・ストーリー・コメントと、相手を含む DM。個人データ）
+instagram-archive
+
 # Google カレンダーの取得結果（個人データ）
 calendar-archive
 
