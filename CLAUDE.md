@@ -21,6 +21,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | ChatGPT 過去会話 | `chatgpt-archive/`（索引 `conversation_map.tsv` 約4,540件 ＋ `lifetalk/` 60件） | ローカルファイルを直接パース |
 | Google カレンダー | 予定そのもの | Google Calendar MCP（`list_events` / `create_event` 等。**書き込む前に必ず内容を確認**） |
 | LINE トーク履歴 | `line-archive/`（7ルーム 約21,933件の地図 `talk_map.tsv` ＋ `deep/` 39件） | ローカルファイルを直接パース（**MCP では取れない**） |
+| Facebook Messenger | `messenger-archive/`（47スレッド 約1,374件の地図 `talk_map.tsv` ＋ `deep/`） | 公式エクスポート（JSON）をローカルパース（**API/MCP は無い**） |
 | Claude Code 過去ログ | `claude-log-archive/`（136セッションの地図 `session_map.tsv` ＋ `deep/` 40件） | 元ログ `~/.claude/projects/` から抽出（**リポジトリ外・消えるので自動で取り込む**） |
 | Gmail | 送信済み **1,213通 / 602スレッド**（2017年12月〜。受信箱 166,476通はノイズが大半） | Gmail MCP（`list_labels` / `search_threads` / `get_message`。**読み取り専用**） |
 | Kindle ハイライト | `kindle-archive/`（**35冊 766件**の地図 `book_map.tsv` ＋ 1冊1ファイルの `books/`） | ブラウザで `read.amazon.co.jp/notebook` から吸い出して直接パース（**API も MCP も無い**） |
@@ -37,7 +38,8 @@ Podcast のネタとして再利用することに価値を置いている。
 - **Gmail MCP の書き込み系は使わない。** 読み取り3種のみ。
 - **freee MCP は読むだけ。書き込み系は一切使わない。** 仕訳・取引・取引先の登録/更新/削除は
   オーナーが freee の画面で行う。**帳簿を壊すと確定申告に直撃する**（Gmail より厳しく扱う）。
-- **LINE / Gmail は第三者の情報を含む。** 氏名・社名・連絡先を成果物に出さない。
+- **LINE / Gmail / Messenger は第三者の情報を含む。** 氏名・社名・連絡先を成果物に出さない。
+  Messenger は地図・深掘りとも相手の実名でなく**スレッド ID** で扱う。
 - **Claude Code の元ログは放っておくと消える。** 取り込みは `SessionStart` フックが自動で回す
   （`scripts/claude_log_sync.py`）。保持期間は365日に延長済み。手で叩くなら `--force`。
 - **ネタを提案する前に必ず既出をチェックする。** `python3 scripts/output_map.py` を回し、
