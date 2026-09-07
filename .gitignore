@@ -41,6 +41,9 @@ analysis
 # LINE のトーク履歴（本人と相手の個人データ）
 line-archive
 
+# Facebook Messenger のトーク履歴（本人と相手の個人データ）
+messenger-archive
+
 # Google カレンダーの取得結果（個人データ）
 calendar-archive
 

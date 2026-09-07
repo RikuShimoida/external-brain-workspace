@@ -85,6 +85,28 @@ Evernote が「整理された結果」なのに対し、LINE には**家族に�
 取得はアプリからの手動エクスポート（`トーク設定 → トーク履歴を送信`）一択で、
 ルームごとにオーナーの手作業が要る。
 
+## Facebook Messenger トーク履歴
+
+- 実体: `messenger-archive/`（47スレッドの地図 `talk_map.tsv`
+  ＋ 濃い日だけ抜き出した `deep/`。元 JSON と添付は `_raw/` 配下）
+- ローカルファイルを直接パースする（個人利用向けの API は無い）。
+
+LINE と同じ2段構え。`scripts/messenger_map.py` で「地図」（1日ぶんの件数・文字数だけの
+一覧）を作り、`scripts/messenger_extract.py` でその日の最長メッセージが 300 字を超える日だけ
+本文を Markdown 化する。パースは `scripts/messenger_parse.py` に集約。
+
+**取得方法:** Facebook の「あなたの情報をダウンロード」で**メッセージだけ・JSON 形式**を選ぶ
+（Instagram ではなく Facebook アカウントを対象にする点に注意）。数日後に届く zip の
+`your_facebook_activity/messages/` 以下を `messenger-archive/_raw/` に展開する。
+
+**文字化け対策:** Facebook の JSON は UTF-8 の各バイトを Latin-1 の1文字として書くため、
+そのまま読むと化ける。`messenger_parse.py` の `fix_mojibake()` が `latin-1 → utf-8` で
+再デコードして元の日本語に戻す。
+
+LINE と同じく**相手の発言が必ず含まれる**ので、素材にするときは引用の扱いを厳しくする。
+地図・深掘りとも相手の実名ではなく**スレッド ID**（`<ローマ字名>_<数字>`）で扱い、
+実名の対応が要るときだけ `messenger_map.py --titles` で参照する。
+
 ## Claude Code 過去ログ
 
 - 実体: `claude-log-archive/`（136セッションの地図 `session_map.tsv`
