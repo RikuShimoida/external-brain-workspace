@@ -62,6 +62,12 @@ outputs-archive
 # 家計（MF ME）の CSV と集計（銀行・カードの明細。店名・口座名を含む個人データ）
 household-archive
 
+# Google マイアクティビティ（検索履歴。極私的な検索を含む個人データ）
+google-activity-archive
+
+# 機械式NG（アダルト・センシティブ検索の除外語彙。語自体がセンシティブなので載せない）
+scripts/ng_words.txt
+
 # Python のキャッシュ
 __pycache__/
 
