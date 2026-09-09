@@ -11,13 +11,13 @@ CLAUDE.md は毎ターン context に乗る固定費なので、**Read で足り
 ## 全体の設計
 
 `twitter-archive/` `chatgpt-archive/` `evernote-archive/` `line-archive/` `claude-log-archive/`
-`kindle-archive/` `outputs-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
+`kindle-archive/` `outputs-archive/` `household-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
 
 ローカルに落とすか、クラウドに置いたままかは、ソースごとに使い分ける。
 
 | 方式 | ソース | 理由 |
 |---|---|---|
-| ローカルに落とす | X / ChatGPT / LINE / Claude Code ログ / Kindle | エクスポートが手作業 or 元ログが消える |
+| ローカルに落とす | X / ChatGPT / LINE / Claude Code ログ / Kindle / 家計（MF ME） | エクスポートが手作業 or 元ログが消える |
 | クラウドに置いたまま | Evernote / Gmail / カレンダー / freee | 常に最新が読める。ディスクを圧迫しない |
 
 大きいソースは **2段構え**（まず軽い「地図」を作り、濃いところだけ本文を取る）で扱う。
@@ -411,3 +411,36 @@ Git 管理外に置く。Kindle ハイライトと同じ扱い。
 X / Evernote が「自分の言葉」、Gmail が「他者との接点」なら、freee は**数字で見た事実**の記録。
 言い訳の効かない一次情報として、他ソースの裏取りに使える
 （「稼ぎたい」と書いた年に実際いくら稼いだか、など）。
+
+## 家計（MF ME）
+
+- 実体: `household-archive/`（MF ME Web版の月次 CSV「収入・支出詳細」＋ 集計の `household_map.tsv`／`summary_YYYY-MM.md`）
+- 公式 CSV エクスポートをローカルパースする（**API/MCP は無い**）。
+
+**freee とはレンズが別。** freee が**事業**の経費・確定申告なら、MF ME（マネーフォワード ME）は
+**家計（生活費）**のお金の流れ。「今月の家計はどうか」「この固定費は要るか」を見るためのもので、
+事業の数字とは混ぜない。
+
+**MCP は無い（別物に注意）。** MCP があるのは「マネーフォワード クラウド」で、これは別サービス。
+MF ME 自体には API も MCP も無いので、LINE / Instagram と同じく公式エクスポート（CSV）をローカルで
+読む。MF ME Web版（`moneyforward.com`）の「収入・支出詳細」を月単位で CSV ダウンロードし、
+`household-archive/` に置く（ファイル名例: `収入・支出詳細_2026-07-01_2026-07-31.csv`）。
+銀行口座・クレジットカードは MF ME 側で自動連携済み。CSV エクスポートはプレミアム（有料）機能。
+
+**扱いの要点:**
+
+- **文字コードは Shift-JIS（実質 cp932）。** `scripts/household_parse.py` が `encoding="cp932"` で読む。
+  このリポジトリで Shift-JIS を扱うのはこのソースだけ。
+- 列は `計算対象, 日付, 内容, 金額（円）, 保有金融機関, 大項目, 中項目, メモ, 振替, ID`。
+  **`計算対象=1` の行だけ**を家計集計に使う（`0` は振替・対象外で除外）。金額は正＝収入 / 負＝支出。
+  `ID` 列がユニークキーで、複数月 CSV の期間が重なっても重複排除できる。
+- `scripts/household_map.py` が月ごとに集計し、`household_map.tsv`（月1行の推移索引）と
+  `summary_YYYY-MM.md`（月次サマリ＝収支と大項目/中項目別の内訳）を書き出す。`--dry-run` で
+  書き込まず確認できる。複数月の CSV を置けば自動で全月が1本の地図に並ぶ（LINE 型のフル上書き）。
+
+**プライバシー:** 個別取引・店名（`内容`）・口座やカード名（`保有金融機関`）は機微情報。
+集計の内部キーには使うが、**成果物には出さず大項目/中項目の集計までに留める**。`household-archive/`
+は Git 管理外（`.gitignore` 済み）。freee 節と同じく、具体的な金額を Git 管理下のファイルに書かない。
+
+**スコープ外（別 Issue）:** カード分類精度の改善（実データでは支出の約8割が「現金・カード」「未分類」に
+寄っており中身が分類されていない）、事業用カードと生活用カードの分離運用の設計。

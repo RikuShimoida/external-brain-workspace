@@ -27,6 +27,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | Gmail | 送信済み **1,213通 / 602スレッド**（2017年12月〜。受信箱 166,476通はノイズが大半） | Gmail MCP（`list_labels` / `search_threads` / `get_message`。**読み取り専用**） |
 | Kindle ハイライト | `kindle-archive/`（**35冊 766件**の地図 `book_map.tsv` ＋ 1冊1ファイルの `books/`） | ブラウザで `read.amazon.co.jp/notebook` から吸い出して直接パース（**API も MCP も無い**） |
 | freee（会計） | 帳簿そのもの（売上・経費・仕訳・試算表） | freee MCP（`https://mcp.freee.co.jp/mcp`。**読み取り専用**） |
+| 家計（MF ME） | `household-archive/`（月次 CSV「収入・支出詳細」＋集計 `household_map.tsv`／`summary_YYYY-MM.md`。Shift-JIS） | 公式 CSV エクスポートをローカルパース（**API/MCP は無い・計算対象=1 のみ集計**） |
 | **自分の生成物** | `outputs-archive/output_map.tsv`（過去の提案・下書き・判断ログ **63件**の既出インデックス） | `scripts/output_map.py` で毎回作り直す（**提案の前に必ず引く**） |
 
 2段構えの設計・スクリプトの使い分け・件数の根拠は [docs/data-sources.md](docs/data-sources.md)。
@@ -39,6 +40,10 @@ Podcast のネタとして再利用することに価値を置いている。
 - **Gmail MCP の書き込み系は使わない。** 読み取り3種のみ。
 - **freee MCP は読むだけ。書き込み系は一切使わない。** 仕訳・取引・取引先の登録/更新/削除は
   オーナーが freee の画面で行う。**帳簿を壊すと確定申告に直撃する**（Gmail より厳しく扱う）。
+- **家計（MF ME）と事業（freee）を混ぜない。レンズが別。** freee は事業の経費・確定申告、
+  MF ME は家計（生活費）。`household-archive/` の CSV は Shift-JIS なので `cp932` で読み、
+  **計算対象=1 の行だけ**集計する（`scripts/household_map.py`）。店名・口座名・個別取引は
+  成果物に出さず、大項目/中項目の集計までに留める。
 - **LINE / Gmail / Messenger / Instagram は第三者の情報を含む。** 氏名・社名・連絡先を成果物に出さない。
   Messenger / Instagram は地図・深掘りとも相手の実名でなく**スレッド ID** で扱い、DM の発言者は
   自分（実名）と `相手`（匿名）だけに正規化する。
