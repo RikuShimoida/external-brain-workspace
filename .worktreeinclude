@@ -16,6 +16,7 @@ link kindle-archive
 link messenger-archive
 link instagram-archive
 link household-archive
+link google-activity-archive
 
 # 出力ディレクトリ（worktree 撤去で生成物が消えないよう、本体側へ書かせる）
 link podcast-ideas

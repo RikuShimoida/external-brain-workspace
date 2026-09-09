@@ -444,3 +444,48 @@ MF ME 自体には API も MCP も無いので、LINE / Instagram と同じく�
 
 **スコープ外（別 Issue）:** カード分類精度の改善（実データでは支出の約8割が「現金・カード」「未分類」に
 寄っており中身が分類されていない）、事業用カードと生活用カードの分離運用の設計。
+
+## Google マイアクティビティ（検索履歴）
+
+- 実体: `google-activity-archive/`（検索語の地図 `search_map.tsv`
+  ＋ くり返した検索だけ抜き出した `deep/interests_YYYY.md`。元 JSON は `_raw/` 配下）
+- 公式 Takeout（JSON）をローカルパースする（**個人利用向けの API は無い**）。
+
+発信（ツイート/note）は氷山の一角で、その下にある **「何に興味を持ち、何を調べてきたか」という“入力”の
+記録** を Podcast ネタ・自己分析の材料にする。実測で検索カテゴリは総 143,023 レコード（うち純検索クエリ
+65,343 件、2019-05〜2026-09）。`scripts/google_activity_map.py` で「地図」（検索語ごとの回数・期間の一覧）を
+作り、`scripts/google_activity_extract.py` で **2回以上くり返した検索語**（＝一過性でなく本当に関心を持った
+こと）だけを年ごとに Markdown 化する。パースは `scripts/google_activity_parse.py` に集約。
+
+**このソースの本体は安全フィルタである。** 検索履歴には**アダルト・極私的な健康/金銭など、成果物に
+絶対に出してはいけない検索が大量に混在**する。丸ごと取り込みは禁止。取り込みは必ず次の二段フィルタを
+通した後だけにする。
+
+- **一段目（機械式NG・A-1a）:** `scripts/ng_words.txt` のキーワード/ドメインに1つでも当たる検索語を
+  機械的に落とす。高速・決定的。**この語彙ファイル自体がセンシティブなので Git 管理外**（`.gitignore` 済み）。
+  取りこぼしても構わない（穴は二段目で埋める）ので、明らかに黒い語だけを厚く並べる。
+- **二段目（意味判定・A-1b）:** 一段目を通過した語のうち **2回以上検索した語**を隔離サブエージェント
+  `search-query-screener` に渡し、「疑わしきは捨てる」で意味判定させる。キーワードの足し算では
+  取りこぼす語（隠語・複合語）をここで落とす。判定結果は `google-activity-archive/verdicts.tsv` に
+  永続化し、`map`／`extract` は毎回これを読むだけで LLM を呼ばない（純粋関数に保つ）。
+  センシティブ語を本体エージェントの会話に載せないため、判定 JSON の verdicts への追記は
+  専用スクリプト `scripts/google_activity_screen.py --from <json>` が担う。
+
+**取得方法:** Google Takeout（`takeout.google.com`）で「マイ アクティビティ」を JSON で書き出す。zip 内の
+`マイ アクティビティ/検索/マイアクティビティ.json`（検索カテゴリ）だけを `scripts/google_activity_extract.py
+--unpack <zip>` で `google-activity-archive/_raw/` に取り出す（zip 全体は展開しない。zip 自体もリポジトリに
+入れない）。Takeout の zip はファイル名が UTF-8 なので、`--unpack` が `cp437 → utf-8` で名を復元してから取り出す。
+
+**自動 sync はしない（意図的）:** Claude Code ログは元ログが30日で消えるため `SessionStart` フックで自動
+取り込みしているが、Takeout は手動エクスポートで元 zip が勝手に消えない＝「取りに行けばいつでもある」側。
+複雑さを足さないため、フック/ロック/差分同期は作らず手動運用（`--unpack` → `map` → 候補づくり → screener →
+`--from` で verdicts 追記 → `map` 再実行）にしている。
+
+**地図は残す／deep は絞る（非対称）:** `search_map.tsv` は「後から grep して、いつ何に関心を持ったかを引く
+索引」なので**除外後の全ユニーク語**（1回きりの検索も含む）を残す。`deep/` は「読ませる濃い塊」なので
+2回以上くり返した語だけ。LINE/Instagram の「地図=全件・deep=閾値」と同じ非対称を検索履歴に写している。
+
+**厳守事項:** センシティブな検索語を成果物に出さない。二段フィルタ（機械式NG＋意味判定）を通した後の
+`search_map.tsv`／`deep/` だけを素材として扱い、`_raw/` の生 JSON からネタを直接拾わない。
+今回の取り込みは**検索カテゴリのみ**。YouTube・マップ・Chrome・Gemini 等の他カテゴリは検索が固まって
+から別 Issue で判断する。`google-activity-archive/` は Git 管理外（`.gitignore` 済み）。

@@ -28,6 +28,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | Kindle ハイライト | `kindle-archive/`（**35冊 766件**の地図 `book_map.tsv` ＋ 1冊1ファイルの `books/`） | ブラウザで `read.amazon.co.jp/notebook` から吸い出して直接パース（**API も MCP も無い**） |
 | freee（会計） | 帳簿そのもの（売上・経費・仕訳・試算表） | freee MCP（`https://mcp.freee.co.jp/mcp`。**読み取り専用**） |
 | 家計（MF ME） | `household-archive/`（月次 CSV「収入・支出詳細」＋集計 `household_map.tsv`／`summary_YYYY-MM.md`。Shift-JIS） | 公式 CSV エクスポートをローカルパース（**API/MCP は無い・計算対象=1 のみ集計**） |
+| Google マイアクティビティ | `google-activity-archive/`（検索語の地図 `search_map.tsv` ＋ `deep/interests_YYYY.md`。純検索 65,343件・2019-05〜2026-09） | 公式 Takeout（JSON・検索カテゴリのみ）をローカルパース＋**二段フィルタ**（**API/MCP は無い・センシティブ検索を除外**） |
 | **自分の生成物** | `outputs-archive/output_map.tsv`（過去の提案・下書き・判断ログ **63件**の既出インデックス） | `scripts/output_map.py` で毎回作り直す（**提案の前に必ず引く**） |
 
 2段構えの設計・スクリプトの使い分け・件数の根拠は [docs/data-sources.md](docs/data-sources.md)。
@@ -55,6 +56,10 @@ Podcast のネタとして再利用することに価値を置いている。
   `/decide` は採点前に過去の判断ログを読み、**前と逆の推奨を黙って出さない**。
 - **Kindle ハイライトは書籍本文の逐語引用。** `kindle-archive/` の外に出さない。
   `books` の `volumes/*.md` は Git 管理下なので、本文を書かずポインタだけ置く。
+- **Google 検索履歴はセンシティブ検索を含む。** アダルト・極私的な健康/金銭などを成果物に出さない。
+  必ず**二段フィルタ**（機械式NG `scripts/ng_words.txt` ＋ 意味判定 `search-query-screener` → `verdicts.tsv`）
+  を通した後の `search_map.tsv`／`deep/` だけを素材にし、`_raw/` の生 JSON から直接拾わない。
+  `ng_words.txt` は語彙自体がセンシティブなので Git 管理外。今回は**検索カテゴリのみ**（他は別 Issue）。
 - `*-archive/` は個人データ。Git 管理外。
 
 ## 進め方の原則
