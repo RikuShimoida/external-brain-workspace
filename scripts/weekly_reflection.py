@@ -212,7 +212,7 @@ def _monday_of(d: _dt.date) -> _dt.date:
 
 
 # 失敗プロセスのポストモーテム起票しきい値（同一文言がこの件数以上でノートを1枚作る）。
-POSTMORTEM_THRESHOLD = 3
+POSTMORTEM_THRESHOLD = 2
 
 
 def find_repeated_fail_process(results: dict, threshold: int = POSTMORTEM_THRESHOLD) -> list[tuple[str, int]]:
