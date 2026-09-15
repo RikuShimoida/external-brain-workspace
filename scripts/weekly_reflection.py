@@ -211,6 +211,30 @@ def _monday_of(d: _dt.date) -> _dt.date:
     return d - _dt.timedelta(days=d.weekday())
 
 
+# 失敗プロセスのポストモーテム起票しきい値（同一文言がこの件数以上でノートを1枚作る）。
+POSTMORTEM_THRESHOLD = 3
+
+
+def find_repeated_fail_process(results: dict, threshold: int = POSTMORTEM_THRESHOLD) -> list[tuple[str, int]]:
+    """失敗プロセスの中で「完全一致の文言」が threshold 件以上あるものを返す。
+
+    比較は文言の完全一致（strip_tags 済みの可視テキストそのまま）。言い換え・部分一致は
+    見ない（オーナー確定＝完全一致のみ）。戻り値は (文言, 件数) を件数降順・初出順で。
+
+    ここで返した文言が、weekly-reflection スキルがポストモーテムを起票する対象になる。
+    """
+    order: list[str] = []
+    counts: dict[str, int] = {}
+    for _date, text in results.get("fail_process", []):
+        if text not in counts:
+            counts[text] = 0
+            order.append(text)
+        counts[text] += 1
+    repeated = [(t, counts[t]) for t in order if counts[t] >= threshold]
+    repeated.sort(key=lambda x: (-x[1], order.index(x[0])))
+    return repeated
+
+
 def build_report(results: dict, week_monday: _dt.date | None) -> str:
     """集計結果を ENML 断片に組み立てる（create_note の content に渡せる形）。"""
     esc = lambda s: html.escape(s, quote=False)
@@ -258,6 +282,21 @@ def build_report(results: dict, week_monday: _dt.date | None) -> str:
         else:
             lines.append("<div>（なし）</div>")
         lines.append("<br/>")
+
+    # 失敗プロセスで完全一致3件以上 → ポストモーテム起票対象を明示する。
+    repeated = find_repeated_fail_process(results)
+    lines.append(
+        f"<div><b>ポストモーテム起票対象（失敗プロセスで完全一致"
+        f"{POSTMORTEM_THRESHOLD}件以上・計{len(repeated)}件）</b></div>"
+    )
+    if repeated:
+        lines.append("<ul>")
+        for text, n in repeated:
+            lines.append(f"<li>{esc(text)}（{n}件）</li>")
+        lines.append("</ul>")
+    else:
+        lines.append("<div>（なし）</div>")
+    lines.append("<br/>")
 
     return "\n".join(lines)
 
