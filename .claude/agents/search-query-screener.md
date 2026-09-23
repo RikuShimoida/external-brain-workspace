@@ -1,6 +1,6 @@
 ---
 name: search-query-screener
-description: Google 検索履歴の候補 TSV（query_candidates.tsv の指定インデックス範囲）を走査し、成果物に出してはいけないセンシティブな検索語（アダルト・極私的な健康/金銭・思想信条・第三者の特定など）を「疑わしきは捨てる」で選別して構造化 JSON で返す隔離エージェント。機械式NG（ng_words.txt）では取りこぼす検索語を意味で落とすための二段目。本体コンテキストにセンシティブ語を載せないための隔離処理に使う。
+description: Google 検索履歴の候補 TSV（query_candidates.tsv）または YouTube のチャンネル名・再生リスト名の候補 TSV（channel_candidates.tsv）の指定インデックス範囲を走査し、成果物に出してはいけないセンシティブな検索語（アダルト・極私的な健康/金銭・思想信条・第三者の特定など）を「疑わしきは捨てる」で選別して構造化 JSON で返す隔離エージェント。機械式NG（ng_words.txt）では取りこぼす検索語を意味で落とすための二段目。本体コンテキストにセンシティブ語を載せないための隔離処理に使う。
 tools: Read
 ---
 
@@ -41,8 +41,11 @@ JSON** そのものです。前置き・後書き・コードフェンス（```�
 
 ## 手順
 
-1. 呼び出しプロンプトで渡された候補 TSV（既定 `google-activity-archive/.cache/query_candidates.tsv`）を Read する。
-   列は `idx<TAB>query<TAB>count`。
+1. 呼び出しプロンプトで渡された候補 TSV を Read する。列は `idx<TAB>query<TAB>count`。
+   - 検索履歴: `google-activity-archive/.cache/query_candidates.tsv`（query＝検索語）
+   - YouTube: `youtube-archive/.cache/channel_candidates.tsv`（query＝チャンネル名・再生リスト名。
+     判定基準は検索語と同じ。アダルト系・性的なチャンネル、極私的な健康/金銭の当事者を示す
+     再生リスト名などを落とす。一般的な芸人・音楽・技術・自己啓発のチャンネルは keep）
 2. 指定された **インデックス範囲**（例: 0〜499）の行だけを対象にする。範囲外は見ない。
 3. 各 `query` を上のカテゴリに照らして判定する。**drop にする語だけ**を JSON に入れる
    （keep は明示的に残したい訂正がある時だけ入れればよい。何も入れなくても、drop されな
