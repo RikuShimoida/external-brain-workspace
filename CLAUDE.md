@@ -20,7 +20,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | X 投稿/検索 | — | Twitter MCP（**過去全件は取れない**） |
 | ChatGPT 過去会話 | `chatgpt-archive/`（索引 `conversation_map.tsv` 約4,540件 ＋ `lifetalk/` 60件） | ローカルファイルを直接パース |
 | Google カレンダー | 予定そのもの | Google Calendar MCP（`list_events` / `create_event` 等。**書き込む前に必ず内容を確認**） |
-| LINE トーク履歴 | `line-archive/`（7ルーム 約21,933件の地図 `talk_map.tsv` ＋ `deep/` 39件） | ローカルファイルを直接パース（**MCP では取れない**） |
+| LINE トーク履歴 | `line-archive/`（8ルーム 約28,938件の地図 `talk_map.tsv` ＋ `deep/` 58件） | ローカルファイルを直接パース（**MCP では取れない**） |
 | Facebook Messenger | `messenger-archive/`（47スレッド 約1,374件の地図 `talk_map.tsv` ＋ `deep/`） | 公式エクスポート（JSON）をローカルパース（**API/MCP は無い**） |
 | Instagram | `instagram-archive/`（キャプション/コメント/DM/質問箱 **計4,229件**の地図 `talk_map.tsv` ＋ `deep/`。2014-11〜2026-08） | 公式エクスポート（**JSON・全期間**）をローカルパース（**API/MCP は無い**） |
 | Claude Code 過去ログ | `claude-log-archive/`（136セッションの地図 `session_map.tsv` ＋ `deep/` 40件） | 元ログ `~/.claude/projects/` から抽出（**リポジトリ外・消えるので自動で取り込む**） |
