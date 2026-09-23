@@ -68,6 +68,9 @@ google-activity-archive
 # iPhone ヘルスケアの書き出し（歩数以外の健康データも丸ごと入る個人データ）
 health-archive
 
+# PayPay の利用履歴 CSV（店名・送金相手・残高を含む個人データ）
+paypay-archive
+
 # 機械式NG（アダルト・センシティブ検索の除外語彙。語自体がセンシティブなので載せない）
 scripts/ng_words.txt
 
