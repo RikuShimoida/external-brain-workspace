@@ -68,8 +68,8 @@ ZIP を全展開せず、まず `scripts/chatgpt_map.py` で「地図」（日�
 
 ## LINE トーク履歴
 
-- 実体: `line-archive/`（7ルーム 約21,933件の地図 `talk_map.tsv`
-  ＋ 濃い日だけ抜き出した `deep/` 39件）
+- 実体: `line-archive/`（8ルーム 約28,938件の地図 `talk_map.tsv`
+  ＋ 濃い日だけ抜き出した `deep/` 58件）
 - ローカルファイルを直接パースする（**MCP では取れない**）。
 
 ChatGPT と同じ2段構え。`scripts/line_map.py` で「地図」（1日ぶんの件数・文字数だけの一覧）を作り、
