@@ -65,6 +65,9 @@ household-archive
 # Google マイアクティビティ（検索履歴。極私的な検索を含む個人データ）
 google-activity-archive
 
+# iPhone ヘルスケアの書き出し（歩数以外の健康データも丸ごと入る個人データ）
+health-archive
+
 # PayPay の利用履歴 CSV（店名・送金相手・残高を含む個人データ）
 paypay-archive
 

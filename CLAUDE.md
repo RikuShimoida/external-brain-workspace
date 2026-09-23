@@ -20,7 +20,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | X 投稿/検索 | — | Twitter MCP（**過去全件は取れない**） |
 | ChatGPT 過去会話 | `chatgpt-archive/`（索引 `conversation_map.tsv` 約4,540件 ＋ `lifetalk/` 60件） | ローカルファイルを直接パース |
 | Google カレンダー | 予定そのもの | Google Calendar MCP（`list_events` / `create_event` 等。**書き込む前に必ず内容を確認**） |
-| LINE トーク履歴 | `line-archive/`（7ルーム 約21,933件の地図 `talk_map.tsv` ＋ `deep/` 39件） | ローカルファイルを直接パース（**MCP では取れない**） |
+| LINE トーク履歴 | `line-archive/`（8ルーム 約28,938件の地図 `talk_map.tsv` ＋ `deep/` 58件） | ローカルファイルを直接パース（**MCP では取れない**） |
 | Facebook Messenger | `messenger-archive/`（47スレッド 約1,374件の地図 `talk_map.tsv` ＋ `deep/`） | 公式エクスポート（JSON）をローカルパース（**API/MCP は無い**） |
 | Instagram | `instagram-archive/`（キャプション/コメント/DM/質問箱 **計4,229件**の地図 `talk_map.tsv` ＋ `deep/`。2014-11〜2026-08） | 公式エクスポート（**JSON・全期間**）をローカルパース（**API/MCP は無い**） |
 | Claude Code 過去ログ | `claude-log-archive/`（136セッションの地図 `session_map.tsv` ＋ `deep/` 40件） | 元ログ `~/.claude/projects/` から抽出（**リポジトリ外・消えるので自動で取り込む**） |
@@ -29,6 +29,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | freee（会計） | 帳簿そのもの（売上・経費・仕訳・試算表） | freee MCP（`https://mcp.freee.co.jp/mcp`。**読み取り専用**） |
 | 家計（MF ME） | `household-archive/`（月次 CSV「収入・支出詳細」＋集計 `household_map.tsv`／`summary_YYYY-MM.md`。Shift-JIS） | 公式 CSV エクスポートをローカルパース（**API/MCP は無い・計算対象=1 のみ集計**） |
 | Google マイアクティビティ | `google-activity-archive/`（検索語の地図 `search_map.tsv` ＋ `deep/interests_YYYY.md`。純検索 65,343件・2019-05〜2026-09） | 公式 Takeout（JSON・検索カテゴリのみ）をローカルパース＋**二段フィルタ**（**API/MCP は無い・センシティブ検索を除外**） |
+| iPhone ヘルスケア（歩数） | `health-archive/`（1日1行の地図 `step_map.tsv` ＋ 月次 `step_monthly.tsv`。3,653日分・2016-04〜2026-09） | 公式の書き出し zip をローカルパース（**API/MCP は無い・歩数以外は読まない**） |
 | **自分の生成物** | `outputs-archive/output_map.tsv`（過去の提案・下書き・判断ログ **63件**の既出インデックス） | `scripts/output_map.py` で毎回作り直す（**提案の前に必ず引く**） |
 
 2段構えの設計・スクリプトの使い分け・件数の根拠は [docs/data-sources.md](docs/data-sources.md)。
@@ -60,6 +61,9 @@ Podcast のネタとして再利用することに価値を置いている。
   必ず**二段フィルタ**（機械式NG `scripts/ng_words.txt` ＋ 意味判定 `search-query-screener` → `verdicts.tsv`）
   を通した後の `search_map.tsv`／`deep/` だけを素材にし、`_raw/` の生 JSON から直接拾わない。
   `ng_words.txt` は語彙自体がセンシティブなので Git 管理外。今回は**検索カテゴリのみ**（他は別 Issue）。
+- **健康の相談では「健診」と「歩数」を両方引く。** 体調・体重・健診結果・運動・睡眠などの相談を受けたら、
+  Evernote の健康診断ノート（検索）と `health-archive/step_map.tsv`（その時期の歩数）を**聞かれなくても**
+  参照して答える。健康データは成果物（Podcast・ツイート・note）に数値を勝手に出さない。
 - `*-archive/` は個人データ。Git 管理外。
 
 ## 進め方の原則
