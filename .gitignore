@@ -79,3 +79,6 @@ __pycache__/
 
 # Claude Code の worktree（/impl・/parallel が main 起点で作る作業ツリー。司令塔のチェックアウトに含めない）
 .claude/worktrees/
+
+# YouTube 視聴履歴・再生リスト（Takeout ＋ YouTube Data API で解決したメタ。個人データ）
+youtube-archive

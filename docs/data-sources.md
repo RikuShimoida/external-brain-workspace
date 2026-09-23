@@ -520,3 +520,65 @@ MF ME 自体には API も MCP も無いので、LINE / Instagram と同じく�
 数値を勝手に出さない。`health-archive/` は Git 管理外（`.gitignore` 済み）。
 
 **スコープ外（別 Issue）:** 毎日の自動取り込み（iOS ショートカット等）、歩数以外の指標（睡眠・心拍・体重など）。
+
+## YouTube（視聴履歴・再生リスト）
+
+- 実体: `youtube-archive/`（チャンネル単位の地図 `watch_map.tsv` ＋ 年ごとの `deep/taste_YYYY.md`。
+  元データは `_raw/`、API で引いた動画メタは `.cache/video_meta.tsv`、意味判定は `verdicts.tsv`）
+- 公式 Takeout（「YouTube と YouTube Music」・JSON）をローカルパース ＋ **YouTube Data API v3（読み取りのみ）**。
+
+**目的は「何を見て、何に笑ってきたか」というインプットの好みを持つこと。** 検索履歴は「何を調べたか」で、
+楽しんで見ていたものは入っていない。お笑い・漫画原作を目指すオーナーにとって、追いかけてきた芸人・
+チャンネルは人格の芯に近い。単位は**チャンネル**（動画タイトルは1回きりが多いので束ねない）。
+
+**データの実態（2026-09-23 の Takeout で実測）:**
+
+| 中身 | 件数 | 期間 | 備考 |
+|---|---|---|---|
+| 視聴履歴 `watch-history.json` | 9,500件（視聴 8,509） | **2026-04〜09 の5か月だけ** | YouTube 側の履歴の自動削除で古い分は消えている（復元不可） |
+| 自作の再生リスト（139本） | 40,995件（ユニーク動画 37,593） | 2017〜2026 | **動画IDと追加日しか無い**。10年分の好みはここにしか無い |
+| 登録チャンネル | 497件 | 日付なし | チャンネル名あり |
+
+再生リストの動画IDは `scripts/youtube_resolve.py` が API（`videos.list`・50件/回）でタイトル・チャンネル・
+カテゴリに解決する（実測 752回 → 解決 32,693 / 削除・非公開 4,700）。**再開可能**（解決済みは問い合わせない）
+で、無料枠（1日 10,000）に収まる。Google に送るのは動画IDだけ。
+
+**再生リストの種類で意味を分ける:** 「後で見る」「Watch later」系は `later`（＝見たかった）、それ以外は
+`playlist`（＝残したかった）、視聴履歴は `watch`。地図ではこの3列を分けて持つ。
+
+**二段フィルタ（検索履歴と同じ考え方）:**
+
+- 一段目（機械式NG）: `scripts/ng_words.txt` に**動画タイトルかチャンネル名**が当たった1件を捨てる。
+  再生リスト名が当たればリストごと読まない。
+- 二段目（意味判定）: **チャンネル名・再生リスト名**を `search-query-screener` に判定させ、
+  `youtube-archive/verdicts.tsv` に永続化する。母集団は「2回以上出てくるチャンネル＋登録チャンネル＋
+  再生リスト名」。**地図・deep にはこの母集団（判定済み）のチャンネルしか載せない**。1回きりの
+  チャンネル（約5千）は件数の内訳にだけ数える（検索履歴の地図が1回きりの語も残すのとは違う。判定に
+  回していない名前を素材に出さないため）。
+- 動画タイトルは地図にも deep にも出さない（意味判定に掛けていないため）。
+- 実測: 候補 3,283 語 → drop 138 語（アダルト・ナンパ/出会い・政治・宗教・精神疾患の当事者系など）。
+  自作の再生リスト「メンタル」〜「メンタル6」（約2.3万件）は screener が drop したが、**オーナー判断で keep**
+  （リスト名は成果物に出ず、中のチャンネルは個別に判定済みのため）。
+
+**手順（手動運用・自動 sync はしない）:**
+
+```
+python3 scripts/youtube_extract.py --unpack ~/Downloads/takeout-*.zip   # 必要な JSON/CSV だけ _raw/ へ（mp4 は取り出さない）
+python3 scripts/youtube_resolve.py [--dry-run] [--limit N]              # 再生リストの動画IDを API で解決
+python3 scripts/youtube_screen.py --candidates                          # 未判定のチャンネル名・再生リスト名
+  → search-query-screener に channel_candidates.tsv のインデックス範囲を渡す（500件ずつ並列）
+python3 scripts/youtube_screen.py --from <drop.json>                    # drop を verdicts へ
+python3 scripts/youtube_screen.py --settle                              # 全範囲判定し終えたら残りを keep で記録
+python3 scripts/youtube_map.py [--dry-run]                              # watch_map.tsv
+python3 scripts/youtube_extract.py [閾値=3] [--dry-run]                  # deep/taste_YYYY.md
+```
+
+`--settle` を忘れると、次回 `--candidates` で判定済みの語がまた候補に出てくる（screener は drop しか返さないため）。
+
+**API キー:** `.env` の `YOUTUBE_API_KEY`（取得手順は `.env.example`）。
+
+**厳守事項:** 判定を通した後の `watch_map.tsv`／`deep/` だけを素材にし、`_raw/`・`.cache/` から直接拾わない。
+`youtube-archive/` は Git 管理外（`.gitignore` 済み）。
+
+**スコープ外（別 Issue）:** YouTube の検索履歴（`検索履歴.json`）、本人がアップロードした動画（声と話し方は #64）、
+視聴履歴の自動削除設定の見直し（オーナー判断）、Netflix・Spotify など他サービス。
