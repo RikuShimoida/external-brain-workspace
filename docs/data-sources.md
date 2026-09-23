@@ -11,13 +11,13 @@ CLAUDE.md は毎ターン context に乗る固定費なので、**Read で足り
 ## 全体の設計
 
 `twitter-archive/` `chatgpt-archive/` `evernote-archive/` `line-archive/` `claude-log-archive/`
-`kindle-archive/` `outputs-archive/` `household-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
+`kindle-archive/` `outputs-archive/` `household-archive/` `health-archive/` は個人データなので Git 管理外（`.gitignore` 済み）。
 
 ローカルに落とすか、クラウドに置いたままかは、ソースごとに使い分ける。
 
 | 方式 | ソース | 理由 |
 |---|---|---|
-| ローカルに落とす | X / ChatGPT / LINE / Claude Code ログ / Kindle / 家計（MF ME） | エクスポートが手作業 or 元ログが消える |
+| ローカルに落とす | X / ChatGPT / LINE / Claude Code ログ / Kindle / 家計（MF ME） / ヘルスケア（歩数） | エクスポートが手作業 or 元ログが消える |
 | クラウドに置いたまま | Evernote / Gmail / カレンダー / freee | 常に最新が読める。ディスクを圧迫しない |
 
 大きいソースは **2段構え**（まず軽い「地図」を作り、濃いところだけ本文を取る）で扱う。
@@ -489,3 +489,34 @@ MF ME 自体には API も MCP も無いので、LINE / Instagram と同じく�
 `search_map.tsv`／`deep/` だけを素材として扱い、`_raw/` の生 JSON からネタを直接拾わない。
 今回の取り込みは**検索カテゴリのみ**。YouTube・マップ・Chrome・Gemini 等の他カテゴリは検索が固まって
 から別 Issue で判断する。`google-activity-archive/` は Git 管理外（`.gitignore` 済み）。
+
+## iPhone ヘルスケア（歩数）
+
+- 実体: `health-archive/`（書き出し zip ＋ 1日1行の地図 `step_map.tsv` ＋ 月次の推移 `step_monthly.tsv`）
+- 公式の書き出しをローカルパースする（**API も MCP も無い**）。
+
+**目的は健康の相談に答えること。** Evernote の健康診断ノート（尿酸値など）は「ある一時点の結果」しか
+分からない。そこに「その時期どれくらい動いていたか」を足して、結果の背景を一緒に考えられるようにする。
+健康の相談では、健診ノート（Evernote を検索）と `step_map.tsv` を**両方**引く（CLAUDE.md の厳守事項）。
+
+**入手:** iPhone のヘルスケアアプリ → 右上のアイコン →「すべてのヘルスケアデータを書き出す」。
+できた zip を Mac に送り、`health-archive/apple_health_export_YYYY-MM-DD.zip` の名前で置く
+（名前順で最後の zip が使われる）。zip は展開しなくてよい。
+
+**扱いの要点:**
+
+- zip の中の `apple_health_export/export.xml` は約240MB。`scripts/health_parse.py` が展開せずに
+  逐次読み（`iterparse`）し、歩数（`HKQuantityTypeIdentifierStepCount`）以外は捨てる。
+- `scripts/health_map.py` が日ごとに集計して `step_map.tsv`（date・歩数・採用した計測元・計測元の数）と
+  `step_monthly.tsv`（month・記録日数・1日平均・合計・最大・最小）を書き出す。`--dry-run` あり。毎回フル上書き。
+- **二重計上の回避:** iPhone と Apple Watch（や機種変更前後の2台の iPhone）が同じ日を両方数えることがある。
+  計測元ごとに日合計を出し、**いちばん多い計測元の値だけ**を採用する。実測で該当は 3,653日中 4日だけ
+  （Watch の記録がほぼ無いため）なので、時間帯単位の優先付けまではしていない。
+- 最新日は書き出した時点までの途中値になる。
+- 実測: 歩数レコード 102,188件 / 2016-04-21〜2026-09-23 / 記録のある日 3,653日。
+
+**プライバシー:** zip には心拍・体重など歩数以外の健康データも丸ごと入っている。読むのは歩数だけ。
+端末名（計測元の名前）は地図に出さず「iPhone / Apple Watch」に丸める。健康データは成果物に
+数値を勝手に出さない。`health-archive/` は Git 管理外（`.gitignore` 済み）。
+
+**スコープ外（別 Issue）:** 毎日の自動取り込み（iOS ショートカット等）、歩数以外の指標（睡眠・心拍・体重など）。
