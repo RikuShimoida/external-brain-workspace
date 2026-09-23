@@ -582,3 +582,45 @@ python3 scripts/youtube_extract.py [閾値=3] [--dry-run]                  # dee
 
 **スコープ外（別 Issue）:** YouTube の検索履歴（`検索履歴.json`）、本人がアップロードした動画（声と話し方は #64）、
 視聴履歴の自動削除設定の見直し（オーナー判断）、Netflix・Spotify など他サービス。
+
+## 話し言葉（声と話し方）
+
+- 実体: `voice-archive/`（話し言葉の地図 `speech_map.tsv` ＋ 本文 `deep/utterances.tsv` ＋ 機械集計 `features.md`
+  ＋ 話し方プロファイル `speech_profile.md`。Evernote から吸い出した元テキストは `_raw/evernote/`）
+
+**目的は「しゃべるときの陸」を持つこと。** 外部脳はほぼ全部が書いた言葉で、口癖・語尾・間・話の組み立てが
+分からない。Podcast 台本や note 下書きを本人の口調で書くとき（`note-draft` / `podcast-neta`）に
+`speech_profile.md` の「台本に寄せるときのルール」を読む。
+
+**素材は「すでにテキストになっている話し言葉」:** オーナーは Claude Code / ChatGPT への指示を音声入力している。
+音声入力かどうかはログに残らないので、**フィラー（えー・えっと・あのー・まあ 等）が2回以上、かつ1,000字あたり
+5回以上**の発言を話し言葉とみなす（`scripts/voice_parse.py`）。回数だけだと、貼り付けた長文にたまたま「まあ」が
+混ざったものを拾う（実測: 回数だけだと309件・156万字、密度を足すと226件・5.9万字）。抜き取り20件中18件が本物の
+話し言葉で、外れは AI 出力の貼り付けと、他人宛て文面の下書きだった（プロファイルを書くときに除外させている）。
+
+| ソース | 話し言葉 / 対象の発言（30字以上） |
+|---|---|
+| Claude Code（元ログ `~/.claude/projects`、自筆の発言だけ） | 74 / 730 |
+| ChatGPT（`chatgpt-archive/*.zip` の user 発言） | 150 / 9,194 |
+| Evernote のポストモーテム「ボイスメモ」欄 | 2 / 2（判定せず全部。音声添付のある15ノート中、欄があり本人だけが話しているもの） |
+
+**Evernote の線引き（オーナー承認済み）:** ポストモーテムの「ボイスメモ」欄だけを対象にする。欄の無いノートや、
+本人以外が話している・対話になっている文字起こしは取り込まない（第三者の発話を持ち込まないため）。
+吸い出しは MCP 読み取りのみで、隔離エージェントが `_raw/evernote/<作成日>_<noteId先頭8>.txt` に書く。
+
+**プロファイルの作り方（捏造防止）:** 数えられるもの（フィラー・語尾・話し言葉に特有の言い回し＝書き言葉との
+対数オッズ比）は `scripts/voice_map.py` が機械集計し、隔離エージェントは解釈と引用だけを書く。引用は
+`utterances.tsv` から一字一句の切り出しで、`python3 scripts/voice_map.py --verify-profile` が全件照合する
+（実測: 76件中 実在しない引用 0件）。
+
+```
+python3 scripts/voice_map.py [--dry-run]       # speech_map.tsv / deep/utterances.tsv / features.md
+  → 隔離エージェントに features.md と utterances.tsv を読ませて speech_profile.md を書かせる
+python3 scripts/voice_map.py --verify-profile  # 引用の実在チェック（NG があれば終了コード 1）
+```
+
+**限界:** 材料は音声入力の**テキスト**なので、声質・抑揚・間の長さは分からない。音声入力は句読点や漢字変換が
+入るため、実際の発話そのものではない。`voice-archive/` は Git 管理外（`.gitignore` 済み）。
+
+**スコープ外（別 Issue）:** 音声ファイルの文字起こし（iPhone ボイスメモ・Evernote の音声添付・YouTube の自作動画。
+ffmpeg と whisper の導入が要る）、声質・抑揚の音響分析、新しい録音の自動取り込み。

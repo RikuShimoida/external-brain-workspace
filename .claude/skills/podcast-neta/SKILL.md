@@ -161,3 +161,5 @@ python3 .claude/skills/podcast-neta/scripts/extract_tweets.py \
 - `outputs-archive/` は既出ネタの地図。生成物から作り直せるので消えても困らないが、
   引用本文を含むので `.gitignore` 済み（Git 管理外）。
 - ネタは捏造しない。すべて実在する投稿/ノートの引用に紐づける。
+- ネタを「本人がしゃべるとこう切り出す」形で添えるときは、`voice-archive/speech_profile.md`
+  （話し方プロファイル）の「6. 台本に寄せるときのルール」に沿う。
