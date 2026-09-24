@@ -82,3 +82,6 @@ __pycache__/
 
 # YouTube 視聴履歴・再生リスト（Takeout ＋ YouTube Data API で解決したメタ。個人データ）
 youtube-archive
+
+# 話し言葉の地図と話し方プロファイル（本人の発話・ボイスメモの文字起こしを含む個人データ）
+voice-archive
