@@ -4,7 +4,7 @@
 household-archive/*.csv（計算対象=1 の明細）を年月ごとに集計し、2つを書き出す:
 
   household-archive/household_map.tsv
-      … 月ごと1行の推移索引（収入・支出・収支・支出件数・大項目トップ3）。
+      … 月ごと1行の推移索引（収入・支出・収支・支出件数・未分類率・大項目トップ3）。
         複数月の CSV を置けば自動で全月が1本に並ぶ（毎回フル上書き）。
 
   household-archive/summary_YYYY-MM.md
@@ -32,7 +32,12 @@ from household_parse import Entry, parse_all
 MAP_REL = "household-archive/household_map.tsv"
 SUMMARY_REL_FMT = "household-archive/summary_{month}.md"
 
-MAP_COLUMNS = ["month", "収入", "支出", "収支", "支出件数", "大項目トップ3"]
+MAP_COLUMNS = ["month", "収入", "支出", "収支", "支出件数", "未分類率", "大項目トップ3"]
+
+# 「何に使ったか」が見えない支出の大項目（#54）。MF ME の「現金・カード」は ATM 引き出し・
+# 電子マネーのチャージ・カード引き落としで、使い道ではなく「お金の移動」しか分からない。
+# 自分の口座への振込や投資が「未分類」の支出に紛れていることも多い（MF ME で振替にすれば外れる）。
+UNCLASSIFIED_MAJORS = ("未分類", "現金・カード")
 
 
 def _by_month(entries: list[Entry]) -> dict[str, list[Entry]]:
@@ -69,6 +74,14 @@ def _expense_by_minor(entries: list[Entry], major: str) -> list[tuple[str, int, 
     return rows
 
 
+def _unclassified(entries: list[Entry]) -> tuple[int, float]:
+    """(未分類の支出額, 支出に占める割合)。割合は支出0なら0。"""
+    expense = sum(-e.amount for e in entries if e.is_expense)
+    amt = sum(-e.amount for e in entries
+              if e.is_expense and e.major in UNCLASSIFIED_MAJORS)
+    return amt, (amt / expense if expense else 0.0)
+
+
 def _map_row(month: str, entries: list[Entry]) -> list[str]:
     income = sum(e.amount for e in entries if e.is_income)
     expense = sum(-e.amount for e in entries if e.is_expense)
@@ -81,6 +94,7 @@ def _map_row(month: str, entries: list[Entry]) -> list[str]:
         str(expense),
         str(income - expense),
         str(expense_cnt),
+        f"{_unclassified(entries)[1]:.0%}",
         top3_str,
     ]
 
@@ -112,6 +126,11 @@ def build_summary(month: str, entries: list[Entry]) -> str:
     lines.append(f"| 収入 | {income:,} | {income_cnt} |")
     lines.append(f"| 支出 | {expense:,} | {expense_cnt} |")
     lines.append(f"| 収支 | {income - expense:,} | — |")
+    lines.append("")
+    un_amt, un_rate = _unclassified(entries)
+    lines.append(f"**未分類率: {un_rate:.0%}**（{'・'.join(UNCLASSIFIED_MAJORS)} = {un_amt:,} 円）。")
+    lines.append("使い道が見えない支出の割合。大口の振込が自分の口座への移動や投資なら、")
+    lines.append("MF ME で「振替」にすると集計から外れる。")
     lines.append("")
     lines.append("## 支出の大項目別内訳（金額降順）")
     lines.append("")
