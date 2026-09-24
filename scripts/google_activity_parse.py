@@ -28,6 +28,7 @@ google_activity_map.py（地図づくり）と google_activity_extract.py（本�
   - **文字化け対策は不要**: Takeout の JSON は正しい UTF-8。fix_mojibake は要らない。
 """
 import os
+import sys
 import re
 import json
 import glob
@@ -77,10 +78,14 @@ def normalize_title(title):
 def load_ng_patterns(path=NG_WORDS_PATH):
     """機械式NG（A-1a）のパターンを読む。1行1パターン、#コメント・空行は無視。
 
-    ファイルが無ければ空リスト（NG 無し）で動く。パターンは小文字で保持し、
-    検索語も小文字化して部分一致で照合する。
+    ファイルが無ければ空リスト（NG 無し）で動くが、**標準エラーに警告を出す**。
+    黙って空にすると一段目が効いていないことに誰も気づかない（実例: #55 の worktree で作った
+    ng_words.txt が撤去で消え、2週間 NG 0件のまま動いていた → #70）。
+    パターンは小文字で保持し、検索語も小文字化して部分一致で照合する。
     """
     if not os.path.exists(path):
+        print(f"警告: {path} がありません。機械式NG（一段目）が効いていない状態で動きます。"
+              "（docs/data-sources.md の Google マイアクティビティ節を参照）", file=sys.stderr)
         return []
     pats = []
     with open(path, encoding="utf-8") as f:
