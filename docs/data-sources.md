@@ -603,6 +603,7 @@ python3 scripts/youtube_extract.py [閾値=3] [--dry-run]                  # dee
 | Claude Code（元ログ `~/.claude/projects`、自筆の発言だけ） | 74 / 730 |
 | ChatGPT（`chatgpt-archive/*.zip` の user 発言） | 150 / 9,194 |
 | Evernote のポストモーテム「ボイスメモ」欄 | 2 / 2（判定せず全部。音声添付のある15ノート中、欄があり本人だけが話しているもの） |
+| 録音の文字起こし（`source=audio`。オーナーが選んだ本人のセリフだけ） | 下記「録音の文字起こし」参照 |
 
 **Evernote の線引き（オーナー承認済み）:** ポストモーテムの「ボイスメモ」欄だけを対象にする。欄の無いノートや、
 本人以外が話している・対話になっている文字起こしは取り込まない（第三者の発話を持ち込まないため）。
@@ -619,8 +620,31 @@ python3 scripts/voice_map.py [--dry-run]       # speech_map.tsv / deep/utterance
 python3 scripts/voice_map.py --verify-profile  # 引用の実在チェック（NG があれば終了コード 1）
 ```
 
-**限界:** 材料は音声入力の**テキスト**なので、声質・抑揚・間の長さは分からない。音声入力は句読点や漢字変換が
+**録音の文字起こし（#68）:** 音声入力のテキストだけだと「人を笑わせにいくときの陸」が分からないので、録音
+（文化祭のコント動画・Evernote の音声添付・YouTube の自作動画・iPhone ボイスメモ）も取り込む。
+
+- **音声を外部に送らない。** macOS 標準の `afconvert` で 16kHz モノラル WAV にし、`whisper-cli`（`brew install
+  whisper-cpp`。Apple Silicon の Metal で動く）で日本語の文字起こしをする。**ffmpeg は使わない**（afconvert で
+  mp4 / m4a / aac / mp3 が読めた）。モデルは `voice-archive/.models/ggml-large-v3-turbo.bin`（約1.6GB。公式の
+  `huggingface.co/ggerganov/whisper.cpp` から取得。不要になったら消してよい）。WAV は処理後に消す。
+- **本人のセリフだけを取り込む（`.self.txt` ゲート）。** 録音には共演者・家族の声が入る。話者の自動分離はせず、
+  オーナーが自分のセリフを選ぶ。選んだものだけが `_raw/transcripts/<名前>.self.txt` になり、`voice_parse.py` は
+  **`.self.txt` がある録音しか読まない**（`source=audio`。判定せず全部話し言葉）。`.srt`（全セグメント）は素材にしない。
+- **本人の訂正を正とする。** 自動の文字起こしは掛け声・固有名詞・早口を聞き違え、取りこぼす（実例: 文化祭の
+  コントで「ショートコント」→「ソートボット」、「ジュース」→「ズース」、1セリフまるごと欠落）。オーナーが正しい
+  セリフを書いてくれた場合は `--keep <名前> -` でそのまま取り込む。
+- Evernote の音声添付は隔離エージェントが `get_attachment`（**読み取りのみ**）で `_raw/audio/evernote_<作成日>_<noteId先頭8>_<連番>.<拡張子>`
+  に保存する。YouTube の自作動画は Takeout zip から必要な mp4 だけ取り出す。
+
+```
+python3 scripts/voice_transcribe.py [--dry-run]           # _raw/audio/ の未処理を文字起こし（済みはスキップ）
+python3 scripts/voice_transcribe.py --show <名前>          # 番号・時刻つきで表示 → オーナーが自分のセリフを選ぶ
+python3 scripts/voice_transcribe.py --keep <名前> 1,3,5    # 選んだ番号だけ .self.txt に（all で全部）
+python3 scripts/voice_transcribe.py --keep <名前> - < 訂正.txt  # オーナーが書き直したセリフをそのまま
+python3 scripts/voice_map.py                               # audio を含めて地図・集計を作り直す
+```
+
+**限界:** 音声入力も文字起こしもテキストなので、声質・抑揚・間の長さは分からない。音声入力は句読点や漢字変換が
 入るため、実際の発話そのものではない。`voice-archive/` は Git 管理外（`.gitignore` 済み）。
 
-**スコープ外（別 Issue）:** 音声ファイルの文字起こし（iPhone ボイスメモ・Evernote の音声添付・YouTube の自作動画。
-ffmpeg と whisper の導入が要る）、声質・抑揚の音響分析、新しい録音の自動取り込み。
+**スコープ外（別 Issue）:** 声質・抑揚・間の長さの音響分析、新しい録音の自動取り込み。

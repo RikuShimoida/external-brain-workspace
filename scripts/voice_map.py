@@ -94,7 +94,7 @@ def build(dry):
     all_by_src = Counter(u.source for u in spoken + written)
     e = sys.stderr
     print("話し言葉と判定した発言 / 全発言（30字以上）:", file=e)
-    for src in ("claude", "chatgpt", "evernote"):
+    for src in ("claude", "chatgpt", "evernote", "audio"):
         print(f"  {src}: {by_src[src]:,} / {all_by_src[src]:,}", file=e)
     s_chars = sum(len(u.text) for u in spoken)
     print(f"話し言葉の合計: {len(spoken):,} 件 / {s_chars:,} 字", file=e)
@@ -132,7 +132,8 @@ def build(dry):
     with open(FEATURES, "w", encoding="utf-8") as w:
         w.write("# 話し言葉の特徴（voice_map.py が機械集計）\n\n")
         w.write(f"- 話し言葉: {len(spoken):,} 件 / {s_chars:,} 字"
-                f"（claude {by_src['claude']} / chatgpt {by_src['chatgpt']} / evernote {by_src['evernote']}）\n")
+                f"（claude {by_src['claude']} / chatgpt {by_src['chatgpt']} / evernote {by_src['evernote']}"
+                f" / audio {by_src['audio']}）\n")
         w.write(f"- 比較対象の書き言葉: {len(written):,} 件 / {w_chars:,} 字"
                 "（同じ Claude / ChatGPT への発言のうち話し言葉と判定されなかったもの）\n\n")
         w.write("## フィラー（1,000字あたり）\n\n| フィラー | 回数 | 話し言葉 /1000字 | 書き言葉 /1000字 |\n|---|---|---|---|\n")
