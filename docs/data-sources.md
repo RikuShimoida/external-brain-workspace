@@ -56,6 +56,22 @@ MCP の `search_tweets` は直近しか取れないため。
 更新は `updated:day-N` で差分だけ取り直せばよく、オーナーの手作業は不要。
 全件の作り直しは重いので**サブエージェントに隔離**する。
 
+### 2つの MCP 実装（クラウドではコネクタ側を使う）
+
+Evernote には接続経路が2つある。用途で使い分ける。
+
+- **`.mcp.json` の `evernote`（小文字・HTTP＋OAuth）**… 手元の対話セッション用。`/mcp` から認証する。
+  **非対話のクラウドセッション（Claude Code on the web）では OAuth を回せず、proxy 403 で接続失敗する。**
+- **claude.ai コネクタ `mcp__Evernote__*`（大文字E）**… claude.ai 側で認可済みなら**クラウドでも使える**。
+  `ToolSearch` で `mcp__Evernote__semantic_search` / `search_notes` / `get_note` / `create_note` /
+  `edit_note` をロードして使う。クラウドで Evernote を読み書きするときはこちら。
+
+地図 `evernote-archive/note_map.tsv` は個人データでクラウドのクローンには存在しない。
+**単一ノートブックが対象のとき**（例: 漫画企画の「漫画のアイデア」ノートブック 約223件）は、
+`search_notes` に `notebook:"漫画のアイデア"` を渡した**全件列挙**が地図の代わりになる
+（`totalResultCount` を見て `startIndex` でページング）。漫画の壁打ち手順は
+`.claude/skills/manga-brainstorm/SKILL.md` を参照。
+
 ## ChatGPT 過去会話
 
 - 実体: `chatgpt-archive/`（全会話の索引 `conversation_map.tsv` 約4,540件
