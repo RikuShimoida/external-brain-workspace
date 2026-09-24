@@ -21,6 +21,7 @@ link health-archive
 link paypay-archive
 link youtube-archive
 link voice-archive
+link freee-archive
 
 # 機械式NG の語彙（語彙自体がセンシティブなので Git 管理外）。worktree で作ると撤去で消えるため、
 # 本体の実ファイルにリンクする（#55 で作った分が消えていた → #70）

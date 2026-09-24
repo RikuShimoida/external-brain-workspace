@@ -35,6 +35,9 @@ decisions
 # Evernote のノート地図（タイトル等のメタデータ。本文は含まないが個人データ）
 evernote-archive
 
+# freee の未処理明細の分析・書き込み前スナップショット・トークン（帳簿の個人データと秘密情報）
+freee-archive
+
 # 成長分析などの分析結果（過去投稿・ノートからの個人的な引用を含む）
 analysis
 

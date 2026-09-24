@@ -71,6 +71,7 @@ worktree は作業ディレクトリのファイルを分離するが、**以下
 
 - **`post_tweet`（X への投稿）・`create_event` / `update_event`（カレンダー）・`edit_note` / `create_note`（Evernote）は、
   worktree のサブエージェントに実行させない。**
+  **freee の自動登録ルール作成（`scripts/freee_rules.py --apply`）も同じ扱い**（MCP ではないが外部への書き込み）。
 - 理由: これらは外部サービスへの不可逆な書き込みであり、`tweet-draft` スキルの「承認制」も
   postmortem の「ノートを直接更新する」も、**オーナーの承認が前提**になっている。
   並列で走るサブエージェントは承認の窓口を持たない。
@@ -201,7 +202,7 @@ BeerSalon と違い、**検品台（共有DB）が無いぶん直列キューは
 
 - アーカイブ（約1GB）を worktree へ実体コピーする
 - 複数 worktree で同時に `scripts/*_map.py` / `*_extract.py` を実行する（出力が壊れる）
-- サブエージェントに `post_tweet` / `create_event` / `edit_note` を実行させる（承認を飛ばした外部書き込み）
+- サブエージェントに `post_tweet` / `create_event` / `edit_note` / `freee_rules.py --apply` を実行させる（承認を飛ばした外部書き込み）
 - worktree に出力ディレクトリをリンクせず、生成物ごと `git worktree remove` で消す
 - **worktree 内で `rm -rf <リンク名>/` を打つ**（リンク先の実体、つまり本体のアーカイブが消える）
 - `.gitignore` に末尾スラッシュ付きでデータディレクトリを書く（リンクが無視されなくなる）

@@ -82,11 +82,29 @@ OAuth なので、freee アプリストアへのアプリ登録もクライア�
 
 `/mcp` で `freee` サーバーが接続済み（connected）になっていることを確認してください。
 
-### 3. 読み取り専用で使う（重要）
+### 3. MCP は読み取り専用で使う（重要）
 
 **freee MCP には仕訳・取引の登録・更新・削除ができる書き込み系ツールが含まれますが、これらは使いません。**
 帳簿を壊すと確定申告に直撃し、税務上の証憑性にも関わります。登録・修正は freee の画面で行ってください
 （詳細は [docs/data-sources.md](docs/data-sources.md)）。
+
+### 4. `/freee`（自動登録ルールを増やす）のセットアップ
+
+`/freee` は MCP ではなく freee の API をスクリプトから直接呼ぶため、自分用の freee アプリが要ります
+（旧リポジトリ freee-transaction-agent で作ったものをそのまま使えます）。
+
+1. **旧リポジトリの Vercel Cron を止める。** リフレッシュトークンは1回使い捨てなので、
+   旧 Cron が動いていると新旧で取り合い、どちらかが認証切れになります。
+2. `.env` に `FREEE_CLIENT_ID` / `FREEE_CLIENT_SECRET`（任意で `FREEE_COMPANY_ID`）を書く。
+   アプリのコールバック URL は `urn:ietf:wg:oauth:2.0:oob`。
+3. ターミナルで認証する（認可コードはチャットに貼らない）:
+
+```bash
+python3 scripts/freee_token.py
+```
+
+トークンは `freee-archive/_secrets/tokens.json`（Git 管理外・権限600）に保存されます。
+以後は `python3 scripts/freee_token.py --check` で疎通確認できます。
 
 > 補足: 個人事業主プランでは一部のエンドポイントが制限される可能性があります。
 > レート制限は 1事業所あたり 120リクエスト/分です。
