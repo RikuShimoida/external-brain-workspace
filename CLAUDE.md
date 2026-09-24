@@ -16,7 +16,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | ソース | 実体 | アクセス方法 |
 |---|---|---|
 | X 過去ツイート | `twitter-archive/extracted/data/tweets.js`（約3,267件） | ローカルファイルを直接パース |
-| Evernote | ノート群（約8,463件） | **2経路で参照**（下記の厳守事項） |
+| Evernote | ノート群（約8,463件。漫画企画は「漫画のアイデア」NB 約223件） | **2経路で参照**（下記の厳守事項）。クラウドでは claude.ai コネクタ `mcp__Evernote__*` を使う |
 | X 投稿/検索 | — | Twitter MCP（**過去全件は取れない**） |
 | ChatGPT 過去会話 | `chatgpt-archive/`（索引 `conversation_map.tsv` 約4,540件 ＋ `lifetalk/` 60件） | ローカルファイルを直接パース |
 | Google カレンダー | 予定そのもの | Google Calendar MCP（`list_events` / `create_event` 等。**書き込む前に必ず内容を確認**） |
@@ -113,3 +113,10 @@ Podcast のネタとして再利用することに価値を置いている。
 
 MCP の認証手順は `README.md` を参照（Twitter は `.env`、Evernote / freee は `/mcp` から OAuth）。
 `.env` を読み込んで起動: `set -a && source .env && set +a && claude`（または `./scripts/claude.sh`）。
+
+**Evernote には2実装がある。** `.mcp.json` の `evernote`（小文字・HTTP＋OAuth）は手元の対話セッション用。
+非対話のクラウドセッション（Claude Code on the web）では proxy 403 で接続失敗するため、
+claude.ai コネクタ側の `mcp__Evernote__*`（大文字E）を `ToolSearch` でロードして使う。
+地図 `evernote-archive/note_map.tsv` はクラウドには無いので、単一ノートブックが対象のときは
+`search_notes` の `notebook:"..."` 全件列挙で地図を代替する。漫画の壁打ちは
+[manga-brainstorm スキル](.claude/skills/manga-brainstorm/SKILL.md)。
