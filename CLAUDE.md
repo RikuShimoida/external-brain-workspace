@@ -26,7 +26,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | Claude Code 過去ログ | `claude-log-archive/`（136セッションの地図 `session_map.tsv` ＋ `deep/` 40件） | 元ログ `~/.claude/projects/` から抽出（**リポジトリ外・消えるので自動で取り込む**） |
 | Gmail | 送信済み **1,213通 / 602スレッド**（2017年12月〜。受信箱 166,476通はノイズが大半） | Gmail MCP（`list_labels` / `search_threads` / `get_message`。**読み取り専用**） |
 | Kindle ハイライト | `kindle-archive/`（**35冊 766件**の地図 `book_map.tsv` ＋ 1冊1ファイルの `books/`） | ブラウザで `read.amazon.co.jp/notebook` から吸い出して直接パース（**API も MCP も無い**） |
-| freee（会計） | 帳簿そのもの（売上・経費・仕訳・試算表） | freee MCP（`https://mcp.freee.co.jp/mcp`。**読み取り専用**） |
+| freee（会計） | 帳簿そのもの（売上・経費・仕訳・試算表）＋ `freee-archive/`（未処理明細の分析と書き込み前スナップショット） | 読み取りは freee MCP（`https://mcp.freee.co.jp/mcp`）。**書き込みは [/freee スキル](.claude/skills/freee/SKILL.md) の自動登録ルール作成だけ**（`scripts/freee_*.py`） |
 | 家計（MF ME） | `household-archive/`（月次 CSV「収入・支出詳細」＋集計 `household_map.tsv`／`summary_YYYY-MM.md`。Shift-JIS） | 公式 CSV エクスポートをローカルパース（**API/MCP は無い・計算対象=1 のみ集計**） |
 | Google マイアクティビティ | `google-activity-archive/`（検索語の地図 `search_map.tsv` ＋ `deep/interests_YYYY.md`。純検索 65,343件・2019-05〜2026-09） | 公式 Takeout（JSON・検索カテゴリのみ）をローカルパース＋**二段フィルタ**（**API/MCP は無い・センシティブ検索を除外**） |
 | YouTube | `youtube-archive/`（チャンネル単位の地図 `watch_map.tsv` 2,948件 ＋ `deep/taste_YYYY.md`。自作再生リスト 2017〜2026 ＋ 視聴履歴は**直近5か月だけ**） | 公式 Takeout ＋ YouTube Data API（**読み取りのみ**・動画IDの解決）＋**二段フィルタ** |
@@ -42,8 +42,10 @@ Podcast のネタとして再利用することに価値を置いている。
 - **Evernote は「検索」と「地図」の2経路を必ず両方走らせる。** 地図で母集団を狭めない。
 - **過去ツイートの網羅分析はローカルアーカイブで。** `search_tweets` は直近しか取れない。
 - **Gmail MCP の書き込み系は使わない。** 読み取り3種のみ。
-- **freee MCP は読むだけ。書き込み系は一切使わない。** 仕訳・取引・取引先の登録/更新/削除は
-  オーナーが freee の画面で行う。**帳簿を壊すと確定申告に直撃する**（Gmail より厳しく扱う）。
+- **freee は読むのは自由、書くのは `/freee` の自動登録ルール作成だけ。** freee MCP の書き込み系は使わない。
+  取引・仕訳・取引先の登録/更新/削除はオーナーが freee の画面で行う（2026-07-13 に取引 578件の誤削除あり）。
+  ルール作成も**ドライラン → オーナー承認 → 書く前にスナップショット**の順を崩さない。
+  **帳簿を壊すと確定申告に直撃する**（Gmail より厳しく扱う）。明細・金額は `freee-archive/` の外に出さない。
 - **家計（MF ME）と事業（freee）を混ぜない。レンズが別。** freee は事業の経費・確定申告、
   MF ME は家計（生活費）。`household-archive/` の CSV は Shift-JIS なので `cp932` で読み、
   **計算対象=1 の行だけ**集計する（`scripts/household_map.py`）。店名・口座名・個別取引は
@@ -111,7 +113,7 @@ Podcast のネタとして再利用することに価値を置いている。
 
 ## セットアップ
 
-MCP の認証手順は `README.md` を参照（Twitter は `.env`、Evernote / freee は `/mcp` から OAuth）。
+MCP の認証手順は `README.md` を参照（Twitter は `.env`、Evernote / freee は `/mcp` から OAuth。`/freee` の書き込み用は `scripts/freee_token.py`）。
 `.env` を読み込んで起動: `set -a && source .env && set +a && claude`（または `./scripts/claude.sh`）。
 
 **Evernote には2実装がある。** `.mcp.json` の `evernote`（小文字・HTTP＋OAuth）は手元の対話セッション用。

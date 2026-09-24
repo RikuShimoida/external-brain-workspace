@@ -32,7 +32,7 @@ when_to_use: 文脈の異なる複数の Issue を一度にまとめて実装さ
 - **アーカイブ配下（`*-archive/`）や生成物ディレクトリを書き換えるタスクは並列禁止。**
   これらは全 worktree でシンボリックリンク共有されており、同時に書き換えると壊れる。
   該当が複数あれば、最初の1つだけ走らせて他は待機（直列化）。
-- **MCP への書き込み（`post_tweet` / `create_event` / `edit_note`）を含むタスクは並列に流さない。**
+- **MCP への書き込み（`post_tweet` / `create_event` / `edit_note`）や freee へのルール作成（`freee_rules.py --apply`）を含むタスクは並列に流さない。**
   オーナーの承認が前提であり、サブエージェントは承認の窓口を持たない。司令塔で単独処理する。
 - 判定に迷う場合は推測せず、「このタスクはアーカイブや生成物を書き換えますか？」とオーナーに確認する。
 
@@ -76,6 +76,6 @@ when_to_use: 文脈の異なる複数の Issue を一度にまとめて実装さ
 ### アンチパターン
 
 - 複数 worktree で同時に `scripts/*_map.py` / `*_extract.py` を走らせる
-- サブエージェントに `post_tweet` / `create_event` / `edit_note` を実行させる
+- サブエージェントに `post_tweet` / `create_event` / `edit_note` / `freee_rules.py --apply` を実行させる
 - アーカイブを worktree へ実体コピーする（約1GB）
 - 適格判定を出さずにいきなり全部を並列で流す
