@@ -18,8 +18,13 @@ link instagram-archive
 link household-archive
 link google-activity-archive
 link health-archive
+link paypay-archive
 link youtube-archive
 link voice-archive
+
+# 機械式NG の語彙（語彙自体がセンシティブなので Git 管理外）。worktree で作ると撤去で消えるため、
+# 本体の実ファイルにリンクする（#55 で作った分が消えていた → #70）
+link scripts/ng_words.txt
 
 # 出力ディレクトリ（worktree 撤去で生成物が消えないよう、本体側へ書かせる）
 link podcast-ideas

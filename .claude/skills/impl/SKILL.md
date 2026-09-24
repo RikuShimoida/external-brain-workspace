@@ -152,6 +152,21 @@ gh pr create --base main
 
 worktree モードの場合のみ実施（`--no-worktree` 時はスキップ）。
 
+**撤去の前に、消えてしまう Git 管理外ファイルが無いか必ず確認する。** worktree の中で新しく作った
+Git 管理外のファイル（リンクでない実ファイル）は、撤去と一緒に消える（実例: #55 で作った
+`scripts/ng_words.txt` が消え、2週間気づかれなかった → #70）。
+
+```bash
+W=.claude/worktrees/<このタスクの worktree>
+git -C "$W" ls-files --others --ignored --exclude-standard \
+  | while read -r f; do [ -L "$W/$f" ] || echo "$f"; done \
+  | grep -vE '^(\.env|\.claude/settings\.local\.json)$|__pycache__|\.DS_Store'
+```
+
+- 何も出なければ撤去してよい（`.env` などのコピーとリンクは除外済み）。
+- 何か出たら**撤去しない**。本体側の同じパスへ移し、残す必要があれば `.worktreeinclude` に `link` を足す。
+  扱いに迷うならオーナーに確認する。
+
 ```bash
 git worktree remove .claude/worktrees/<このタスクの worktree>
 ```

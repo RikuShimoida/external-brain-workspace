@@ -29,7 +29,7 @@ Podcast のネタとして再利用することに価値を置いている。
 | freee（会計） | 帳簿そのもの（売上・経費・仕訳・試算表） | freee MCP（`https://mcp.freee.co.jp/mcp`。**読み取り専用**） |
 | 家計（MF ME） | `household-archive/`（月次 CSV「収入・支出詳細」＋集計 `household_map.tsv`／`summary_YYYY-MM.md`。Shift-JIS） | 公式 CSV エクスポートをローカルパース（**API/MCP は無い・計算対象=1 のみ集計**） |
 | Google マイアクティビティ | `google-activity-archive/`（検索語の地図 `search_map.tsv` ＋ `deep/interests_YYYY.md`。純検索 65,343件・2019-05〜2026-09） | 公式 Takeout（JSON・検索カテゴリのみ）をローカルパース＋**二段フィルタ**（**API/MCP は無い・センシティブ検索を除外**） |
-| YouTube | `youtube-archive/`（チャンネル単位の地図 `watch_map.tsv` 3,001件 ＋ `deep/taste_YYYY.md`。自作再生リスト 2017〜2026 ＋ 視聴履歴は**直近5か月だけ**） | 公式 Takeout ＋ YouTube Data API（**読み取りのみ**・動画IDの解決）＋**二段フィルタ** |
+| YouTube | `youtube-archive/`（チャンネル単位の地図 `watch_map.tsv` 2,948件 ＋ `deep/taste_YYYY.md`。自作再生リスト 2017〜2026 ＋ 視聴履歴は**直近5か月だけ**） | 公式 Takeout ＋ YouTube Data API（**読み取りのみ**・動画IDの解決）＋**二段フィルタ** |
 | 話し言葉（声と話し方） | `voice-archive/`（話し言葉 231件の地図 `speech_map.tsv` ＋ 機械集計 `features.md` ＋ **話し方プロファイル `speech_profile.md`**。うち録音5件＝文化祭のコント・1人芝居など） | Claude Code / ChatGPT への**音声入力**をフィラーで判定 ＋ 録音を**ローカルで文字起こし**（whisper-cpp）し**本人が選んだセリフだけ**を合流（**本人口調で書くときに読む**） |
 | iPhone ヘルスケア（歩数） | `health-archive/`（1日1行の地図 `step_map.tsv` ＋ 月次 `step_monthly.tsv`。3,653日分・2016-04〜2026-09） | 公式の書き出し zip をローカルパース（**API/MCP は無い・歩数以外は読まない**） |
 | **自分の生成物** | `outputs-archive/output_map.tsv`（過去の提案・下書き・判断ログ **63件**の既出インデックス） | `scripts/output_map.py` で毎回作り直す（**提案の前に必ず引く**） |
