@@ -51,7 +51,7 @@ select:mcp__evernote__search_notes,mcp__evernote__get_note,mcp__evernote__search
 ### 1. 今日の「今日やること」ノートを特定する
 
 - `mcp__evernote__search_notes` に `intitle:今日やること`、`clientTimeZone: Asia/Tokyo`、
-  `sortBy: created` で問い合わせ、**今日の日付（YYYY年M月D日）にタイトルが一致するもの**を選ぶ。
+  `sortBy: created` で問い合わせ、**今日の日付にタイトルが一致するもの**を選ぶ（`今日やること - @YYYY-MM-DD` 形式。古いノートは `YYYY年M月D日` 形式）。
 - 今日の分が見つからない、または複数該当して曖昧なときは、**推測で進めずオーナーに確認**。
 
 ### 2. ノート本文を取得して心得の丸・罰を抽出する
