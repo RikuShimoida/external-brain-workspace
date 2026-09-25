@@ -38,7 +38,7 @@ git の状態確認（`git status` / `git log` 等）も不要。
 6. **並列可否の判定**（`/parallel` に投入されうるため、計画段階で明示する）。
    `docs/worktree-workflow.md` §2 に照らし、次に当たるなら「並列不可（直列）」と書く。
    - アーカイブ配下（`*-archive/`）や生成物ディレクトリを**書き換える**タスク
-   - MCP への**書き込み**（`post_tweet` / `create_event` / `edit_note`）や freee へのルール作成（`freee_rules.py --apply`）を含むタスク
+   - MCP への**書き込み**（`post_tweet` / `create_event` / `edit_note` / `freee_api_post` 等）や freee へのルール作成（`freee_rules.py --apply`）を含むタスク
    - 判断に迷う場合は推測せず、「このタスクはアーカイブや生成物を書き換えますか？」とオーナーに聞く。
 
 7. 実行計画を、後述のフォーマットで表形式で提示する。
