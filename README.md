@@ -85,6 +85,7 @@ OAuth なので、freee アプリストアへのアプリ登録もクライア�
 ### 3. MCP は読み取り専用で使う（重要）
 
 **freee MCP には仕訳・取引の登録・更新・削除ができる書き込み系ツールが含まれますが、これらは使いません。**
+使うのは読み取りの `freee_api_get` と状態確認系だけで、`freee_api_post` / `put` / `patch` / `delete` は使いません。
 帳簿を壊すと確定申告に直撃し、税務上の証憑性にも関わります。登録・修正は freee の画面で行ってください
 （詳細は [docs/data-sources.md](docs/data-sources.md)）。
 
@@ -106,7 +107,7 @@ python3 scripts/freee_token.py
 トークンは `freee-archive/_secrets/tokens.json`（Git 管理外・権限600）に保存されます。
 以後は `python3 scripts/freee_token.py --check` で疎通確認できます。
 
-> 補足: 個人事業主プランでは一部のエンドポイントが制限される可能性があります。
+> 補足: 個人事業主プランでも試算表は取れます（2026-09-25 確認）。一部のエンドポイントは制限される可能性があります。
 > レート制限は 1事業所あたり 120リクエスト/分です。
 
 ## Gmail（claude.ai コネクタ）のセットアップ
